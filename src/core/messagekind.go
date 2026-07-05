@@ -1,0 +1,37 @@
+package core
+
+type MessageKind string
+
+const (
+	MessageUnknown          MessageKind = "unknown"
+	MessageText             MessageKind = "text"
+	MessageImage            MessageKind = "image"
+	MessageVideo            MessageKind = "video"
+	MessageAudio            MessageKind = "audio"
+	MessageVoice            MessageKind = "voice"
+	MessageDocument         MessageKind = "document"
+	MessageSticker          MessageKind = "sticker"
+	MessageContact          MessageKind = "contact"
+	MessageContacts         MessageKind = "contacts"
+	MessageLocation         MessageKind = "location"
+	MessageLiveLocation     MessageKind = "live_location"
+	MessageButtons          MessageKind = "buttons"
+	MessageButtonReply      MessageKind = "button_reply"
+	MessageList             MessageKind = "list"
+	MessageListReply        MessageKind = "list_reply"
+	MessageTemplate         MessageKind = "template"
+	MessageTemplateReply    MessageKind = "template_reply"
+	MessageInteractive      MessageKind = "interactive"
+	MessageInteractiveReply MessageKind = "interactive_reply"
+	MessageGroupInvite      MessageKind = "group_invite"
+	MessageProduct          MessageKind = "product"
+	MessageOrder            MessageKind = "order"
+	MessagePayment          MessageKind = "payment"
+	MessageRequestPhone     MessageKind = "request_phone"
+	MessageKeepInChat       MessageKind = "keep_in_chat"
+	MessageStructured       MessageKind = "structured"
+	MessageReaction         MessageKind = "reaction"
+	MessagePoll             MessageKind = "poll"
+	MessageProtocol         MessageKind = "protocol"
+	MessageEventInvite      MessageKind = "event_invite"
+)
