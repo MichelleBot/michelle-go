@@ -7,23 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	_ "sptzx/src/commands/ai"
-	_ "sptzx/src/commands/downloader"
-	"sptzx/src/commands/games"
-	_ "sptzx/src/commands/general"
-	_ "sptzx/src/commands/group"
-	_ "sptzx/src/commands/maker"
-	_ "sptzx/src/commands/owner"
-	_ "sptzx/src/commands/primbon"
-	_ "sptzx/src/commands/random"
-	_ "sptzx/src/commands/search"
-	_ "sptzx/src/commands/stalk"
-	_ "sptzx/src/commands/sticker"
-	_ "sptzx/src/commands/tools"
+	_ "michelle/src/commands/general"
 
-	"sptzx/src/config"
-	"sptzx/src/core"
-	"sptzx/src/handler"
+	"michelle/src/config"
+	"michelle/src/core"
+	"michelle/src/handler"
 
 	"time"
 
@@ -100,10 +88,6 @@ func main() {
 	sharedDB.SetMaxIdleConns(5)
 	sharedDB.SetConnMaxLifetime(5 * time.Minute)
 
-	if err := games.Init(cfg.SessionDB); err != nil {
-		fmt.Fprintln(os.Stderr, "Game DB error:", err)
-		os.Exit(1)
-	}
 	log.Infof("✅ DB initialized")
 
 	deviceStore, err := container.GetFirstDevice(ctx)
