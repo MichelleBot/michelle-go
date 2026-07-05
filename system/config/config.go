@@ -20,7 +20,7 @@ type Config struct {
 	StickerPackName string
 	StickerAuthor   string
 	Antispam        AntispamConfig
-	SiputzX         SiputzXConfig
+	Michelle        MichelleConfig
 }
 
 type AntispamConfig struct {
@@ -29,7 +29,7 @@ type AntispamConfig struct {
 	BanDurationSecs int
 }
 
-type SiputzXConfig struct {
+type MichelleConfig struct {
 	Enabled      bool
 	BaseURL      string
 	GeminiCookie string
@@ -89,7 +89,7 @@ func Load() *Config {
 
 	stickerAuthor := os.Getenv("STICKER_AUTHOR")
 	if stickerAuthor == "" {
-		stickerAuthor = "Siputzx"
+		stickerAuthor = "MichelleBot"
 	}
 
 	pairingPhone := os.Getenv("PAIRING_PHONE")
@@ -98,10 +98,10 @@ func Load() *Config {
 		logLevel = "INFO"
 	}
 
-	siputzxEnabled := os.Getenv("SIPUTZX_ENABLED")
-	siputzxBaseURL := os.Getenv("SIPUTZX_BASE_URL")
-	if siputzxBaseURL == "" {
-		siputzxBaseURL = "https://api.siputzx.my.id"
+	michelleBotEnabled := os.Getenv("MICHELLEBOT_ENABLED")
+	michelleBotBaseURL := os.Getenv("MICHELLEBOT_BASE_URL")
+	if michelleBotBaseURL == "" {
+		michelleBotBaseURL = "https://api.michellebot.my.id"
 	}
 	geminiCookie := os.Getenv("GEMINI_COOKIE")
 
@@ -124,9 +124,9 @@ func Load() *Config {
 			MaxMsgPerMinute: maxMsgPerMinute,
 			BanDurationSecs: banDurationSecs,
 		},
-		SiputzX: SiputzXConfig{
-			Enabled:      siputzxEnabled == "true",
-			BaseURL:      siputzxBaseURL,
+		Michelle: MichelleConfig{
+			Enabled:      michelleBotEnabled == "true",
+			BaseURL:      michelleBotBaseURL,
 			GeminiCookie: geminiCookie,
 		},
 	}

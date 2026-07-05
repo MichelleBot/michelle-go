@@ -1,6 +1,6 @@
-# sptzxgo
+# michelle-go
 
-`sptzxgo` is a modular WhatsApp bot written in Go and powered by `whatsmeow`. The project is designed around an event-driven architecture, category-based command modules, and a growing internal framework for normalization, dispatching, and policy enforcement.
+`michelle-go` is a modular WhatsApp bot written in Go and powered by `whatsmeow`. The project is designed around an event-driven architecture, category-based command modules, and a growing internal framework for normalization, dispatching, and policy enforcement.
 
 ## Highlights
 
@@ -23,8 +23,8 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/siputzx/sptzxgo.git
-cd sptzxgo
+git clone https://github.com/MichelleBot/michelle-go.git
+cd michelle-go
 go mod tidy
 cp .env.example .env
 go run main.go
@@ -48,8 +48,8 @@ The bot is configured through environment variables.
 | `ANTISPAM_MAX_PER_SECOND` | Anti-spam threshold per second | No |
 | `ANTISPAM_MAX_PER_MINUTE` | Anti-spam threshold per minute | No |
 | `ANTISPAM_BAN_DURATION_SECS` | Temporary anti-spam ban duration | No |
-| `SIPUTZX_ENABLED` | Enable external API-backed features | No |
-| `SIPUTZX_BASE_URL` | Base URL for the SiputzX API | No |
+| `MICHELLEBOT_ENABLED` | Enable external API-backed features | No |
+| `MICHELLEBOT_BASE_URL` | Base URL for the MichelleBot API | No |
 | `GEMINI_COOKIE` | Cookie used by Gemini-related functionality | No |
 
 ## Login Flow
@@ -163,7 +163,7 @@ The bot keeps an in-memory message snapshot store for supported message types. W
 ## Project Layout
 
 ```text
-sptzxgo/
+michelle-go/
 ├── main.go
 ├── README.md
 ├── .env.example

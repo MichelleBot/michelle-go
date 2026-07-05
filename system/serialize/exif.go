@@ -20,7 +20,7 @@ type StickerMetadata struct {
 func StickerMetadataDefault() StickerMetadata {
 	return StickerMetadata{
 		PackName:   "WhatsApp Bot",
-		Author:     "Siputzx",
+		Author:     "MichelleBot",
 		Categories: []string{""},
 	}
 }
@@ -36,7 +36,7 @@ func buildExifBinary(metadata StickerMetadata) ([]byte, error) {
 	}
 
 	jsonData := map[string]interface{}{
-		"sticker-pack-id":        "https://github.com/siputzx",
+		"sticker-pack-id":        "https://github.com/MichelleBot",
 		"sticker-pack-name":      metadata.PackName,
 		"sticker-pack-publisher": metadata.Author,
 		"emojis":                 cats,
