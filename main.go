@@ -71,7 +71,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Config error:", err)
 		os.Exit(1)
 	}
-	log := waLog.Stdout("sptzx", cfg.LogLevel, true)
+	log := waLog.Stdout("michelle", cfg.LogLevel, true)
 	ctx := context.Background()
 
 	container, err := sqlstore.New(ctx, "sqlite3", cfg.SessionDB, log)

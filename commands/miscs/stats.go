@@ -77,7 +77,7 @@ func init() {
 			sb.WriteString(fmt.Sprintf("  Used      : %.1f GB\n", diskUsed))
 			sb.WriteString(fmt.Sprintf("  Free      : %.1f GB\n\n", diskFree))
 
-			sb.WriteString(fmt.Sprintf("_%s v%s_", core.SptzxProject, core.SptzxVersion))
+			sb.WriteString(fmt.Sprintf("_%s v%s_", core.MichelleProject, core.MichelleVersion))
 
 			return ptz.ReplyText(sb.String())
 		},

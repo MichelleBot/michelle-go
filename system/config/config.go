@@ -20,19 +20,12 @@ type Config struct {
 	StickerPackName string
 	StickerAuthor   string
 	Antispam        AntispamConfig
-	Michelle        MichelleConfig
 }
 
 type AntispamConfig struct {
 	MaxMsgPerSecond int
 	MaxMsgPerMinute int
 	BanDurationSecs int
-}
-
-type MichelleConfig struct {
-	Enabled      bool
-	BaseURL      string
-	GeminiCookie string
 }
 
 func Load() *Config {
@@ -98,13 +91,6 @@ func Load() *Config {
 		logLevel = "INFO"
 	}
 
-	michelleBotEnabled := os.Getenv("MICHELLEBOT_ENABLED")
-	michelleBotBaseURL := os.Getenv("MICHELLEBOT_BASE_URL")
-	if michelleBotBaseURL == "" {
-		michelleBotBaseURL = "https://api.michellebot.my.id"
-	}
-	geminiCookie := os.Getenv("GEMINI_COOKIE")
-
 	maxMsgPerSecond := parseEnvInt("ANTISPAM_MAX_PER_SECOND", 3)
 	maxMsgPerMinute := parseEnvInt("ANTISPAM_MAX_PER_MINUTE", 20)
 	banDurationSecs := parseEnvInt("ANTISPAM_BAN_DURATION_SECS", 30)
@@ -123,11 +109,6 @@ func Load() *Config {
 			MaxMsgPerSecond: maxMsgPerSecond,
 			MaxMsgPerMinute: maxMsgPerMinute,
 			BanDurationSecs: banDurationSecs,
-		},
-		Michelle: MichelleConfig{
-			Enabled:      michelleBotEnabled == "true",
-			BaseURL:      michelleBotBaseURL,
-			GeminiCookie: geminiCookie,
 		},
 	}
 }

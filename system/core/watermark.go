@@ -1,8 +1,8 @@
 package core
 
 const (
-	SptzxProject = "michelle-go"
-	SptzxAuthor  = "Darrel Parker"
-	SptzxGitHub  = "github.com/MichelleBot"
-	SptzxVersion = "1.0.0"
+	MichelleProject = "michelle-go"
+	MichelleAuthor  = "Darrel Parker"
+	MichelleGitHub  = "github.com/MichelleBot"
+	MichelleVersion = "1.0.0"
 )

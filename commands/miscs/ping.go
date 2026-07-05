@@ -20,7 +20,7 @@ func init() {
 				ptz.Bot.Log.Debugf("react error: %v", err)
 			}
 			elapsed := time.Since(start)
-			return ptz.ReplyText(fmt.Sprintf("🏓 *Pong!* `%dms`\n_sptzx v%s by %s_", elapsed.Milliseconds(), core.SptzxVersion, core.SptzxAuthor))
+			return ptz.ReplyText(fmt.Sprintf("🏓 *Pong!* `%dms`\n_michelle v%s by %s_", elapsed.Milliseconds(), core.MichelleVersion, core.MichelleAuthor))
 		},
 	})
 }
