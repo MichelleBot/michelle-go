@@ -10,7 +10,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.47
 	github.com/mdp/qrterminal/v3 v3.2.1
 	github.com/nyaruka/phonenumbers v1.8.0
-	github.com/showwin/speedtest-go v1.7.10
 	go.mau.fi/whatsmeow v0.0.0-20260630180629-b572e5bcb92b
 	google.golang.org/protobuf v1.36.11
 )

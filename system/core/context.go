@@ -74,21 +74,24 @@ func NewPtzFromNormalizedMessage(bot *Bot, msg *NormalizedMessage) *Ptz {
 }
 
 func parseCommandParts(bot *Bot, body string) ([]string, string, string, []string) {
-	parts := strings.Fields(body)
-
+	body = strings.TrimSpace(body)
 	var cmd, rawArgs string
 	args := []string{}
+	var parts []string
 
-	if len(parts) > 0 {
-		for _, prefix := range bot.Config.Prefixes {
-			if strings.HasPrefix(parts[0], prefix) {
-				cmd = strings.ToLower(strings.TrimPrefix(parts[0], prefix))
+	for _, prefix := range bot.Config.Prefixes {
+		if strings.HasPrefix(body, prefix) {
+			trimmedBody := strings.TrimSpace(strings.TrimPrefix(body, prefix))
+			parts = strings.Fields(trimmedBody)
+			if len(parts) > 0 {
+				cmd = strings.ToLower(parts[0])
 				if len(parts) > 1 {
 					args = parts[1:]
-					rawArgs = strings.TrimSpace(strings.TrimPrefix(body, parts[0]))
+					// Re-extract rawArgs based on original split structure
+					rawArgs = strings.TrimSpace(strings.TrimPrefix(trimmedBody, parts[0]))
 				}
-				break
 			}
+			break
 		}
 	}
 

@@ -5,22 +5,29 @@ import (
 	"time"
 
 	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func init() {
 	core.Use(&core.Command{
-		Name:        "ping",
-		Aliases:     []string{"p"},
-		Description: "Cek response time bot",
-		Usage:       "ping",
-		Category:    "general",
-		Handler: func(ptz *core.Ptz) error {
-			start := time.Now()
-			if err := ptz.React("🏓"); err != nil {
-				ptz.Bot.Log.Debugf("react error: %v", err)
-			}
-			elapsed := time.Since(start)
-			return ptz.ReplyText(fmt.Sprintf("🏓 *Pong!* `%dms`\n_michelle v%s by %s_", elapsed.Milliseconds(), core.MichelleVersion, core.MichelleAuthor))
-		},
+		Usage:       []string{"ping", "p"},
+		Category:    "miscs",
+		Handler:     handlePing,
 	})
+}
+
+func handlePing(ptz *core.Ptz) error {
+	start := time.Now()
+	
+	// Send initial message
+	msgID, err := ptz.ReplyTextID("Memeriksa ...")
+	if err != nil {
+		return err
+	}
+	
+	elapsed := time.Since(start)
+	
+	// Edit with result
+	newText := fmt.Sprintf("✨ Kecepatan : [ %dms ]", elapsed.Milliseconds())
+	return serialize.EditMessage(ptz.Bot.Client, ptz.Chat, msgID, newText)
 }

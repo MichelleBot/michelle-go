@@ -75,18 +75,16 @@ func PerUserLimit(max int, window time.Duration) *CommandLimit {
 }
 
 type Command struct {
-	Name        string
-	Aliases     []string
-	Description string
-	Usage       string
-	Category    string
-	OwnerOnly   bool
-	GroupOnly   bool
-	AdminOnly   bool
-	BotAdmin    bool
-	Quota       *CommandQuota
-	Limit       *CommandLimit
-	Handler     HandlerFunc
+	Usage     []string
+	Hidden    []string
+	Category  string
+	OwnerOnly bool
+	GroupOnly bool
+	AdminOnly bool
+	BotAdmin  bool
+	Quota     *CommandQuota
+	Limit     *CommandLimit
+	Handler   HandlerFunc
 }
 
 type Registry struct {
@@ -98,12 +96,15 @@ func NewRegistry() *Registry {
 }
 
 func (r *Registry) Register(cmd *Command) {
-	if _, ok := r.commands[cmd.Name]; ok {
+	if len(cmd.Usage) == 0 {
 		return
 	}
-	r.commands[cmd.Name] = cmd
-	for _, alias := range cmd.Aliases {
-		r.commands[alias] = cmd
+	primary := cmd.Usage[0]
+	if _, ok := r.commands[primary]; ok {
+		return
+	}
+	for _, usage := range cmd.Usage {
+		r.commands[usage] = cmd
 	}
 }
 
@@ -113,31 +114,31 @@ func (r *Registry) Get(name string) (*Command, bool) {
 }
 
 func (r *Registry) All() []*Command {
-	seen := map[string]struct{}{}
-	result := make([]*Command, 0, len(r.commands))
+	seen := map[*Command]struct{}{}
+	result := make([]*Command, 0)
 	for _, cmd := range r.commands {
-		if _, ok := seen[cmd.Name]; ok {
+		if _, ok := seen[cmd]; ok {
 			continue
 		}
-		seen[cmd.Name] = struct{}{}
+		seen[cmd] = struct{}{}
 		result = append(result, cmd)
 	}
 	return result
 }
 
 func (r *Registry) ByCategory() map[string][]*Command {
-	seen := map[string]struct{}{}
+	seen := map[*Command]struct{}{}
 	result := map[string][]*Command{}
 	for _, cmd := range r.commands {
-		if _, ok := seen[cmd.Name]; ok {
+		if _, ok := seen[cmd]; ok {
 			continue
 		}
-		seen[cmd.Name] = struct{}{}
+		seen[cmd] = struct{}{}
 		result[cmd.Category] = append(result[cmd.Category], cmd)
 	}
 	for cat := range result {
 		sort.Slice(result[cat], func(i, j int) bool {
-			return result[cat][i].Name < result[cat][j].Name
+			return result[cat][i].Usage[0] < result[cat][j].Usage[0]
 		})
 	}
 	return result
@@ -193,15 +194,15 @@ func (c *Command) Execute(ptz *Ptz) error {
 
 	if c.Quota != nil && c.Quota.Enabled && c.Quota.Cost > 0 && ptz.Bot != nil && ptz.Bot.Users != nil && !ptz.IsOwner() {
 		if err := ConsumeQuota(ptz, c.Quota.Cost); err != nil {
-			ptz.Bot.Log.Errorf("consume limit failed on %s: %v", c.Name, err)
+			ptz.Bot.Log.Errorf("consume limit failed on %s: %v", c.Usage[0], err)
 			return nil
 		}
 	}
 
 	if c.Limit != nil && c.Limit.Enabled && ptz.Bot != nil && ptz.Bot.CommandLimiter != nil {
-		allowed, retryAfter := ptz.Bot.CommandLimiter.Allow(c.Name, ptz.Sender.User, c.Limit.Max, c.Limit.Window)
+		allowed, retryAfter := ptz.Bot.CommandLimiter.Allow(c.Usage[0], ptz.Sender.User, c.Limit.Max, c.Limit.Window)
 		if !allowed {
-			ptz.ReplyText(fmt.Sprintf("Limit command %s habis coba lagi dalam %s", c.Name, formatRetryAfter(retryAfter)))
+			ptz.ReplyText(fmt.Sprintf("Limit command %s habis coba lagi dalam %s", c.Usage[0], formatRetryAfter(retryAfter)))
 			return nil
 		}
 	}
@@ -212,6 +213,9 @@ func (c *Command) Execute(ptz *Ptz) error {
 			ptz.Bot.Log.Errorf("track interaction failed for %s: %v", userID, err)
 		}
 	}
+
+	// Track hit command
+	TrackCommand(ptz.Bot, c.Usage[0])
 
 	return c.Handler(ptz)
 }

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	freeDailyLimit    = 100
+	freeDailyLimit    = 35
 	premiumDailyLimit = 500
 )
 

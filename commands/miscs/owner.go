@@ -1,41 +1,32 @@
 package commands
 
 import (
-	"fmt"
-
 	"michelle/system/core"
 	"michelle/system/serialize"
 )
 
 func init() {
 	core.Use(&core.Command{
-		Name:        "owner",
-		Aliases:     []string{"creator", "dev"},
-		Description: "Kirim daftar kontak owner bot",
-		Usage:       "owner",
-		Category:    "general",
-		Handler:     handleOwnerContacts,
+		Usage:    []string{"owner", "creator", "dev"},
+		Category: "miscs",
+		Handler:  handleOwnerContacts,
 	})
 }
 
 func handleOwnerContacts(ptz *core.Ptz) error {
-	if ptz.Bot == nil || ptz.Bot.Config == nil || len(ptz.Bot.Config.Owners) == 0 {
-		return ptz.ReplyText("Owner bot belum diset di konfigurasi.")
-	}
-
-	contacts := make([]struct {
+	// Send multiple contacts as requested
+	contacts := []struct {
 		Phone string
 		Name  string
-	}, 0, len(ptz.Bot.Config.Owners))
-
-	for i, owner := range ptz.Bot.Config.Owners {
-		contacts = append(contacts, struct {
-			Phone string
-			Name  string
-		}{
-			Phone: owner,
-			Name:  fmt.Sprintf("Owner Bot %d", i+1),
-		})
+	}{
+		{
+			Phone: ptz.Bot.Config.Owners[0],
+			Name:  "Owner & Creator",
+		},
+		{
+			Phone: "6282244425559",
+			Name:  "Fahri (CO-Owner)",
+		},
 	}
 
 	return serialize.SendMultipleContacts(ptz.Bot.Client, ptz.Chat, contacts)

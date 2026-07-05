@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"strings"
@@ -11,21 +13,26 @@ import (
 
 var StartTime = time.Now()
 
+func UcWord(str string) string {
+	return strings.Title(str)
+}
+
+func FetchAsJSON(url string) (map[string]interface{}, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	var target map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&target)
+	return target, err
+}
+
 func FmtUptime(d time.Duration) string {
-	days := int(d.Hours()) / 24
-	hours := int(d.Hours()) % 24
+	hours := int(d.Hours())
 	mins := int(d.Minutes()) % 60
 	secs := int(d.Seconds()) % 60
-	if days > 0 {
-		return fmt.Sprintf("%dd %dh %dm %ds", days, hours, mins, secs)
-	}
-	if hours > 0 {
-		return fmt.Sprintf("%dh %dm %ds", hours, mins, secs)
-	}
-	if mins > 0 {
-		return fmt.Sprintf("%dm %ds", mins, secs)
-	}
-	return fmt.Sprintf("%ds", secs)
+	return fmt.Sprintf("%02d:%02d:%02d", hours, mins, secs)
 }
 
 func RssMemMB() float64 {

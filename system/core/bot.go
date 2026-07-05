@@ -23,9 +23,14 @@ type Bot struct {
 	Registry       *Registry
 	Container      *sqlstore.Container
 	Log            waLog.Logger
+	DB             *DB
 }
 
 func NewBot(cfg *config.Config, container *sqlstore.Container, client *whatsmeow.Client, log waLog.Logger, db *sql.DB) *Bot {
+	database, err := NewDB(db)
+	if err != nil {
+		log.Errorf("DB initialization error: %v", err)
+	}
 
 	return &Bot{
 		Client:         client,
@@ -39,6 +44,7 @@ func NewBot(cfg *config.Config, container *sqlstore.Container, client *whatsmeow
 		BotConfig:      NewBotSettings(),
 		Container:      container,
 		Log:            log,
+		DB:             database,
 	}
 }
 

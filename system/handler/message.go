@@ -175,18 +175,18 @@ func (h *EventHandler) executeCommand(ptz *core.Ptz) {
 	started := time.Now()
 	defer func() {
 		if r := recover(); r != nil {
-			h.bot.Log.Errorf("Recovered from panic in command %s: %v", cmd.Name, r)
+			h.bot.Log.Errorf("Recovered from panic in command %s: %v", cmd.Usage[0], r)
 			if err := ptz.ReplyText("❌ Terjadi error internal saat menjalankan perintah."); err != nil {
-				h.bot.Log.Errorf("panic fallback reply failed on %s: %v", cmd.Name, err)
+				h.bot.Log.Errorf("panic fallback reply failed on %s: %v", cmd.Usage[0], err)
 			}
 		}
-		h.bot.Log.Debugf("command %s completed in %s", cmd.Name, time.Since(started))
+		h.bot.Log.Debugf("command %s completed in %s", cmd.Usage[0], time.Since(started))
 	}()
 
 	if err := cmd.Execute(ptz); err != nil {
-		h.bot.Log.Errorf("Command %s error: %v", cmd.Name, err)
+		h.bot.Log.Errorf("Command %s error: %v", cmd.Usage[0], err)
 		if replyErr := ptz.ReplyText("❌ Perintah gagal dijalankan. Coba lagi sebentar."); replyErr != nil {
-			h.bot.Log.Errorf("command error reply failed on %s: %v", cmd.Name, replyErr)
+			h.bot.Log.Errorf("command error reply failed on %s: %v", cmd.Usage[0], replyErr)
 		}
 	}
 }

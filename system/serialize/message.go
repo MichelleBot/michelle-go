@@ -324,6 +324,15 @@ func SendImageWithURL(client *whatsmeow.Client, to types.JID, url, caption strin
 	return SendImage(client, to, data, mime, caption)
 }
 
+func SendImageWithURLReply(client *whatsmeow.Client, to types.JID, url, caption string, quotedMsg *waE2E.Message, quotedInfo types.MessageInfo) error {
+	data, err := Fetch(url)
+	if err != nil {
+		return err
+	}
+	mime := detectMIME(data)
+	return SendImageReply(client, to, data, mime, caption, quotedMsg, quotedInfo)
+}
+
 func SendVideo(client *whatsmeow.Client, to types.JID, videoData []byte, mime, caption string) error {
 	resp, err := client.Upload(context.Background(), videoData, whatsmeow.MediaVideo)
 	if err != nil {

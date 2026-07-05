@@ -59,6 +59,10 @@ func GetDefaultHeaders(browser string) fhttp.Header {
 	return headers
 }
 
+func FetchAsBuffer(url string) ([]byte, error) {
+	return serialize.Fetch(url)
+}
+
 func SendAsImage(ptz *core.Ptz, data []byte, mimeType string) error {
 	return serialize.SendImageReply(ptz.Bot.Client, ptz.Chat, data, mimeType, "", ptz.Message, ptz.Info)
 }

@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	_ "michelle/commands"
+	_ "michelle/commands/converter"
 	_ "michelle/commands/miscs"
 
 	"michelle/system/config"
