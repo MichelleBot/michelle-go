@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"michelle/src/core"
+	"michelle/system/core"
 	"time"
 
 	"go.mau.fi/whatsmeow/types/events"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"go.mau.fi/whatsmeow/types/events"
-	"michelle/src/core"
+	"michelle/system/core"
 )
 
 func (h *EventHandler) dispatchNormalizedEvent(evt *core.NormalizedEvent) {

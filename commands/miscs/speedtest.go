@@ -1,4 +1,4 @@
-package general
+package commands
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/showwin/speedtest-go/speedtest"
-	"michelle/src/core"
+	"michelle/system/core"
 )
 
 func init() {

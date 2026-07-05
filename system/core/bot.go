@@ -2,9 +2,8 @@ package core
 
 import (
 	"database/sql"
-	"michelle/src/api"
-	"michelle/src/config"
-	"michelle/src/middleware"
+	"michelle/system/config"
+	"michelle/system/middleware"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -24,12 +23,9 @@ type Bot struct {
 	Registry       *Registry
 	Container      *sqlstore.Container
 	Log            waLog.Logger
-	API            *api.Client
 }
 
 func NewBot(cfg *config.Config, container *sqlstore.Container, client *whatsmeow.Client, log waLog.Logger, db *sql.DB) *Bot {
-	apiClient := api.NewClient(cfg.SiputzX.BaseURL)
-	apiClient.SetLogger(log)
 
 	return &Bot{
 		Client:         client,
@@ -43,7 +39,6 @@ func NewBot(cfg *config.Config, container *sqlstore.Container, client *whatsmeow
 		BotConfig:      NewBotSettings(),
 		Container:      container,
 		Log:            log,
-		API:            apiClient,
 	}
 }
 

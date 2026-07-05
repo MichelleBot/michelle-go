@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/nyaruka/phonenumbers"
-	"michelle/src/config"
+	"michelle/system/config"
 )
 
 var strictPhonePattern = regexp.MustCompile(`^[1-9][0-9]{6,14}$`)

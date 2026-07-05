@@ -1,4 +1,4 @@
-package general
+package commands
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"michelle/src/core"
-	"michelle/src/utils"
+	"michelle/system/core"
+	"michelle/system/utils"
 )
 
 func init() {

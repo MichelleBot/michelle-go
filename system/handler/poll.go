@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"michelle/src/core"
+	"michelle/system/core"
 )
 
 func (h *EventHandler) handlePollEvent(msg *core.NormalizedMessage) {

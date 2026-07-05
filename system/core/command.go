@@ -98,6 +98,9 @@ func NewRegistry() *Registry {
 }
 
 func (r *Registry) Register(cmd *Command) {
+	if _, ok := r.commands[cmd.Name]; ok {
+		return
+	}
 	r.commands[cmd.Name] = cmd
 	for _, alias := range cmd.Aliases {
 		r.commands[alias] = cmd
@@ -109,8 +112,17 @@ func (r *Registry) Get(name string) (*Command, bool) {
 	return cmd, ok
 }
 
-func (r *Registry) All() map[string]*Command {
-	return r.commands
+func (r *Registry) All() []*Command {
+	seen := map[string]struct{}{}
+	result := make([]*Command, 0, len(r.commands))
+	for _, cmd := range r.commands {
+		if _, ok := seen[cmd.Name]; ok {
+			continue
+		}
+		seen[cmd.Name] = struct{}{}
+		result = append(result, cmd)
+	}
+	return result
 }
 
 func (r *Registry) ByCategory() map[string][]*Command {

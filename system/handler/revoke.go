@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 
-	"michelle/src/core"
-	"michelle/src/serialize"
+	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func (h *EventHandler) handleRevokeEvent(msg *core.NormalizedMessage) {

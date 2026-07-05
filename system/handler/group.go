@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"michelle/src/core"
-	"michelle/src/serialize"
+	"michelle/system/core"
+	"michelle/system/serialize"
 
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"

@@ -7,11 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	_ "michelle/src/commands/general"
+	_ "michelle/commands"
+	_ "michelle/commands/miscs"
 
-	"michelle/src/config"
-	"michelle/src/core"
-	"michelle/src/handler"
+	"michelle/system/config"
+	"michelle/system/core"
+	"michelle/system/handler"
 
 	"time"
 

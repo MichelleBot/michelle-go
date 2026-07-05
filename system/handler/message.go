@@ -6,8 +6,8 @@ import (
 
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
-	"michelle/src/core"
-	"michelle/src/serialize"
+	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func resolveSender(info types.MessageInfo) (phoneJID types.JID, displayName string) {

@@ -9,8 +9,8 @@ import (
 	fhttp "github.com/bogdanfinn/fhttp"
 	"github.com/bogdanfinn/tls-client/profiles"
 
-	"michelle/src/core"
-	"michelle/src/serialize"
+	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func GetBrowserProfile(browser string) profiles.ClientProfile {

@@ -1,4 +1,4 @@
-package general
+package commands
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"michelle/src/core"
+	"michelle/system/core"
 )
 
 const limitPrice = 100

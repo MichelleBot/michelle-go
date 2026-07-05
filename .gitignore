@@ -1,0 +1,17 @@
+# Sensitive data
+.env
+*.db
+*.db-shm
+*.db-wal
+
+# Go binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependencies
+vendor/

@@ -1,10 +1,10 @@
-package general
+package commands
 
 import (
 	"fmt"
 	"time"
 
-	"michelle/src/core"
+	"michelle/system/core"
 )
 
 func init() {

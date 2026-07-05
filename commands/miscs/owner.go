@@ -1,10 +1,10 @@
-package general
+package commands
 
 import (
 	"fmt"
 
-	"michelle/src/core"
-	"michelle/src/serialize"
+	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func init() {

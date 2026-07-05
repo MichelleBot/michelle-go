@@ -9,7 +9,7 @@ import (
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
-	"michelle/src/serialize"
+	"michelle/system/serialize"
 )
 
 type Ptz struct {
