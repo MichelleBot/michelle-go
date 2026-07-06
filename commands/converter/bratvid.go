@@ -21,7 +21,7 @@ func init() {
 
 func runBratVid(ptz *core.Ptz) error {
 	if len(ptz.Args) == 0 {
-		return ptz.ReplyText("🚩 Masukkan teks.")
+		return ptz.ReplyText(fmt.Sprintf("• *Example* : %sbratvid michelle", ptz.Bot.GetPrefix()))
 	}
 
 	text := ptz.RawArgs
@@ -31,7 +31,6 @@ func runBratVid(ptz *core.Ptz) error {
 
 	ptz.React("🕒")
 
-	// Use URL encoding for the text
 	apiUrl := "https://brat.siputzx.my.id/mp4?text=" + url.QueryEscape(text)
 	data, err := utils.FetchAsBuffer(apiUrl)
 	if err != nil {

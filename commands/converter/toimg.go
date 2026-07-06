@@ -16,7 +16,6 @@ func init() {
 }
 
 func runToImg(ptz *core.Ptz) error {
-	// Memastikan yang di-reply adalah stiker
 	if ptz.Message.ExtendedTextMessage == nil || ptz.Message.ExtendedTextMessage.ContextInfo == nil || ptz.Message.ExtendedTextMessage.ContextInfo.QuotedMessage == nil {
 		return ptz.ReplyText("🚩 Balas stiker yang ingin Anda ubah menjadi gambar.")
 	}
@@ -28,13 +27,11 @@ func runToImg(ptz *core.Ptz) error {
 
 	ptz.React("🕒")
 
-	// Download media stiker
 	data, err := serialize.DownloadMedia(ptz.Bot.Client, quotedMsg)
 	if err != nil {
 		return ptz.ReplyText("❌ Gagal mendownload stiker: " + err.Error())
 	}
 
-	// Konversi WebP ke JPEG menggunakan ffmpeg yang sudah tersedia di serialize
 	imgData, err := serialize.ToJPEG(data, ".webp")
 	if err != nil {
 		return ptz.ReplyText("❌ Gagal mengubah stiker ke gambar: " + err.Error())

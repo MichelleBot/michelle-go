@@ -60,12 +60,10 @@ func runSettings(ptz *core.Ptz) error {
 		return nil
 	}
 
-	// Get current status
 	var status bool
 	query := fmt.Sprintf("SELECT %s FROM groups WHERE jid = ?", dbField)
 	err := ptz.Bot.DB.Conn.QueryRow(query, ptz.Chat.String()).Scan(&status)
 	if err != nil {
-		// Group might not exist in DB, insert it
 		_, err = ptz.Bot.DB.Conn.Exec("INSERT OR IGNORE INTO groups (jid, name) VALUES (?, ?)", ptz.Chat.String(), ptz.Chat.User)
 		if err != nil {
 			return ptz.ReplyText("❌ Gagal inisialisasi grup: " + err.Error())
@@ -95,7 +93,6 @@ func runSettings(ptz *core.Ptz) error {
 		return ptz.ReplyText(fmt.Sprintf("🚩 %s sudah %s sebelumnya.", strings.Title(typeField), "diaktifkan"))
 	}
 
-	// Update DB
 	updateQuery := fmt.Sprintf("UPDATE groups SET %s = ? WHERE jid = ?", dbField)
 	_, err = ptz.Bot.DB.Conn.Exec(updateQuery, newStatus, ptz.Chat.String())
 	if err != nil {

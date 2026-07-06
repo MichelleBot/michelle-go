@@ -27,8 +27,6 @@ func runGroup(ptz *core.Ptz) error {
 
 	option := strings.ToLower(ptz.Args[0])
 	
-	// 'false' means group is open (not announcement)
-	// 'true' means group is closed (announcement)
 	var announce bool
 	if option == "open" {
 		announce = false

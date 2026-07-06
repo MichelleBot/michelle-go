@@ -34,8 +34,7 @@ func runTagall(ptz *core.Ptz) error {
 	sb.WriteString("乂  *T A G A L L*\n\n")
 	sb.WriteString(fmt.Sprintf("*“%s”*\n\n", message))
 	
-	// Add readmore
-	sb.WriteString(strings.Repeat("\u200E", 4001) + "\n")
+	sb.WriteString(strings.Repeat("\u200E", 4001))
 
 	mentionedJIDs := make([]types.JID, 0, len(ptz.GroupInfo.Participants))
 	for _, p := range ptz.GroupInfo.Participants {
