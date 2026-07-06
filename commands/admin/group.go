@@ -12,7 +12,7 @@ func init() {
 	core.Use(&core.Command{
 		Usage:     []string{"group"},
 		UsageHint: "open / close",
-		Category:  "admin",
+		Category:  "admin tools",
 		GroupOnly: true,
 		AdminOnly: true,
 		BotAdmin:  true,

@@ -13,7 +13,7 @@ func init() {
 	core.Use(&core.Command{
 		Usage:     []string{"tagall"},
 		UsageHint: "text (optional)",
-		Category:  "admin",
+		Category:  "admin tools",
 		GroupOnly: true,
 		AdminOnly: true,
 		Handler:   runTagall,
