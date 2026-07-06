@@ -7,6 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/mem"
 	"michelle/system/core"
 	"michelle/system/utils"
 )
@@ -23,22 +26,25 @@ func init() {
 				delete(ipData, "query")
 			}
 
-			// Memory stats
-			mem := getMemoryStats()
+			// System stats
+			v, _ := mem.VirtualMemory()
+			d, _ := disk.Usage("/")
+			c, _ := cpu.Info()
+			
+			cpuName := "Unknown"
+			if len(c) > 0 {
+				cpuName = c[0].ModelName
+			}
 			
 			cwd, _ := os.Getwd()
 
 			lines := []string{
-				"乂  *S E R V E R*",
-				"",
 				fmt.Sprintf("┌  ◦  Directory : %s", cwd),
 				fmt.Sprintf("│  ◦  OS : %s (%s / %s)", runtime.GOOS, runtime.GOARCH, runtime.Version()),
 				fmt.Sprintf("│  ◦  Process : %d", os.Getpid()),
 				fmt.Sprintf("│  ◦  Core : %d", runtime.NumCPU()),
-				fmt.Sprintf("│  ◦  Heap Total : %s", mem["heapTotal"]),
-				fmt.Sprintf("│  ◦  Heap Used : %s", mem["heapUsed"]),
-				fmt.Sprintf("│  ◦  External : %s", mem["external"]),
-				fmt.Sprintf("│  ◦  Array Buffers : %s", mem["arrayBuffers"]),
+				fmt.Sprintf("│  ◦  RAM : %.2fGB / %.2fGB (%.2f%%)", float64(v.Used)/1024/1024/1024, float64(v.Total)/1024/1024/1024, v.UsedPercent),
+				fmt.Sprintf("│  ◦  Disk : %.2fGB / %.2fGB (%.2f%%)", float64(d.Used)/1024/1024/1024, float64(d.Total)/1024/1024/1024, d.UsedPercent),
 			}
 
 			if ipData != nil {
@@ -48,24 +54,9 @@ func init() {
 			}
 			
 			lines = append(lines, fmt.Sprintf("│  ◦  Uptime : %s", utils.FmtUptime(time.Since(utils.StartTime))))
-			lines = append(lines, "└  ◦  Processor : (System Default)")
+			lines = append(lines, fmt.Sprintf("└  ◦  Processor : %s", cpuName))
 
 			return ptz.ReplyText(strings.Join(lines, "\n"))
 		},
 	})
-}
-
-func getMemoryStats() map[string]string {
-	var mem runtime.MemStats
-	runtime.ReadMemStats(&mem)
-	format := func(b uint64) string {
-		return fmt.Sprintf("%.2f MB", float64(b)/1024/1024)
-	}
-
-	return map[string]string{
-		"heapTotal":    format(mem.HeapSys),
-		"heapUsed":     format(mem.HeapAlloc),
-		"external":     format(mem.OtherSys), // Best approximation in Go
-		"arrayBuffers": "N/A",                 // Go doesn't expose this directly
-	}
 }

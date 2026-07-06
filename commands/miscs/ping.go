@@ -11,6 +11,7 @@ import (
 func init() {
 	core.Use(&core.Command{
 		Usage:       []string{"ping", "p"},
+		Hidden:      []string{"p"},
 		Category:    "miscs",
 		Handler:     handlePing,
 	})

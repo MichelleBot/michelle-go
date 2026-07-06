@@ -13,6 +13,7 @@ import (
 func init() {
 	core.Use(&core.Command{
 		Usage:     []string{"tiktok", "tikmp3", "tikwm", "tt"},
+		Hidden:    []string{"tt"},
 		UsageHint: "link",
 		Category:  "downloader",
 		Quota:     core.PerUserQuota(1),
@@ -22,7 +23,7 @@ func init() {
 
 func handleTikTok(ptz *core.Ptz) error {
 	if len(ptz.Args) == 0 {
-		return ptz.ReplyText(fmt.Sprintf("🚩 Contoh penggunaan: %s%s https://vm.tiktok.com/ZSR7c5G6y/", ptz.Prefix, ptz.Command))
+		return ptz.ReplyText(utils.Example(ptz.Prefix, ptz.Command, "https://vm.tiktok.com/ZSR7c5G6y/"))
 	}
 
 	url := ptz.Args[0]

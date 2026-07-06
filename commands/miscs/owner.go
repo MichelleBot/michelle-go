@@ -8,6 +8,7 @@ import (
 func init() {
 	core.Use(&core.Command{
 		Usage:    []string{"owner", "creator", "dev"},
+		Hidden:   []string{"creator", "dev"},
 		Category: "miscs",
 		Handler:  handleOwnerContacts,
 	})

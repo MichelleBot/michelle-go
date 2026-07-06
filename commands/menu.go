@@ -33,6 +33,13 @@ func sendSimpleMenu(ptz *core.Ptz) error {
 	}
 
 	byCat := core.GlobalRegistry().ByCategory()
+	categories := make([]string, 0)
+	for cat := range byCat {
+		if cat != "" && cat != "menu" {
+			categories = append(categories, cat)
+		}
+	}
+	sort.Strings(categories)
 
 	// Jika user mengetik .menu [kategori]
 	if len(ptz.Args) > 0 {
@@ -42,70 +49,64 @@ func sendSimpleMenu(ptz *core.Ptz) error {
 			return ptz.ReplyText("❌ Kategori tidak ditemukan.")
 		}
 
-		filteredCmds := make([]*core.Command, 0)
-		for _, cmd := range cmds {
+		return ptz.ReplyText(formatCategoryCommands(cmds, prefixUsed, categoryName))
+	}
+
+	// Tampilan menu utama (semua kategori)
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Hai @%s 🪸\n\n", ptz.Sender.User))
+
+	for i, cat := range categories {
+		cmds := byCat[cat]
+		// Add double newline to force separation
+		if i > 0 {
+			sb.WriteString("\n\n")
+		}
+		sb.WriteString(formatCategoryCommands(cmds, prefixUsed, cat))
+	}
+
+	sb.WriteString("\n\n> © michelle-go v1.1")
+
+	return ptz.ReplyTextMention(sb.String(), []types.JID{ptz.Sender})
+}
+
+func formatCategoryCommands(cmds []*core.Command, prefixUsed, categoryName string) string {
+	lines := make([]string, 0)
+	lines = append(lines, fmt.Sprintf("– *MENU %s*\n", strings.ToUpper(categoryName)))
+	
+	// Flatten commands to individual usage lines first
+	usageLines := make([]string, 0)
+	for _, cmd := range cmds {
+		hint := ""
+		if cmd.UsageHint != "" {
+			hint = fmt.Sprintf(" *%s*", cmd.UsageHint)
+		}
+
+		// Periksa setiap usage, masukkan hanya jika tidak ada di Hidden
+		for _, usage := range cmd.Usage {
 			isHidden := false
 			for _, h := range cmd.Hidden {
-				if h == "run" {
+				if usage == h {
 					isHidden = true
 					break
 				}
 			}
 			if !isHidden {
-				filteredCmds = append(filteredCmds, cmd)
+				usageLines = append(usageLines, fmt.Sprintf("%s%s%s", prefixUsed, usage, hint))
 			}
 		}
-
-		lines := make([]string, 0)
-		for _, cmd := range filteredCmds {
-			hint := ""
-			if cmd.UsageHint != "" {
-				hint = fmt.Sprintf(" *%s*", cmd.UsageHint)
-			}
-			
-			for _, usage := range cmd.Usage {
-				lines = append(lines, fmt.Sprintf("│  ◦  %s%s%s", prefixUsed, usage, hint))
-			}
-		}
-
-		// Adjust first and last prefix
-		if len(lines) > 0 {
-			lines[0] = strings.Replace(lines[0], "│", "┌", 1)
-			lines[len(lines)-1] = strings.Replace(lines[len(lines)-1], "│", "└", 1)
-		}
-		
-		return ptz.ReplyText(strings.Join(lines, "\n"))
 	}
 
-	// Tampilan menu utama
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Hai @%s 🪸\n\n", ptz.Sender.User))
-	sb.WriteString("◦ *Module* : 2.0.0\n")
-	sb.WriteString("◦ *Database* : SQLite\n")
-	sb.WriteString("◦ *Libray* : Whatsmeow-v1.1\n\n")
-
-	categories := make([]string, 0)
-	for cat := range byCat {
-		if cat != "" && cat != "menu" {
-			categories = append(categories, cat)
-		}
-	}
-	sort.Strings(categories)
-
-	lines := make([]string, 0, len(categories))
-	count := len(categories)
-	for i, cat := range categories {
+	for i, usage := range usageLines {
 		prefix := "│  ◦  "
 		if i == 0 {
 			prefix = "┌  ◦  "
-		} else if i == count-1 {
+		}
+		if i == len(usageLines)-1 {
 			prefix = "└  ◦  "
 		}
-		lines = append(lines, fmt.Sprintf("%s%smenu %s", prefix, prefixUsed, cat))
+		lines = append(lines, fmt.Sprintf("%s%s", prefix, usage))
 	}
-	sb.WriteString(strings.Join(lines, "\n"))
-
-	sb.WriteString("\n\n> *Simple Whatsapp bot michelle*")
-
-	return ptz.ReplyTextMention(sb.String(), []types.JID{ptz.Sender})
+	
+	return strings.Join(lines, "\n")
 }

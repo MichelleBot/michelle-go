@@ -7,7 +7,8 @@ import (
 
 func init() {
 	core.Use(&core.Command{
-		Usage:     []string{"sticker", "s", "sk", "stiker", "sgif"},
+		Usage:     []string{"sticker"},
+		Hidden:    []string{"s", "sk", "stiker", "sgif"},
 		UsageHint: "reply media",
 		Category:  "converter",
 		Quota:     core.PerUserQuota(1),

@@ -14,6 +14,17 @@ func NewDB(db *sql.DB) (*DB, error) {
 	if _, err := db.Exec("PRAGMA journal_mode=WAL;"); err != nil {
 		return nil, err
 	}
+	// Apply optimizations
+	pragmas := []string{
+		"PRAGMA synchronous=NORMAL;",
+		"PRAGMA busy_timeout=5000;",
+		"PRAGMA cache_size=-2000;",
+	}
+	for _, p := range pragmas {
+		if _, err := db.Exec(p); err != nil {
+			return nil, err
+		}
+	}
 	// Configure connection pool
 	db.SetMaxOpenConns(1) // SQLite only supports one writer at a time
 	
