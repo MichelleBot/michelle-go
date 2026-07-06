@@ -19,7 +19,7 @@ func init() {
 		core.Use(&core.Command{
 			Usage:     []string{cmd},
 			UsageHint: "on / off",
-			Category:  "admin tools",
+			Category:  "admin",
 			GroupOnly: true,
 			AdminOnly: true,
 			Handler:   runSettings,

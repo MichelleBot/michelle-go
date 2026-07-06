@@ -11,7 +11,7 @@ func init() {
 	core.Use(&core.Command{
 		Usage:     []string{"mute"},
 		UsageHint: "0 / 1",
-		Category:  "admin tools",
+		Category:  "admin",
 		Handler:   runMute,
 		AdminOnly: true,
 		GroupOnly: true,
