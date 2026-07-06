@@ -7,10 +7,11 @@ import (
 
 func init() {
 	core.Use(&core.Command{
-		Usage:    []string{"sticker", "s", "sk", "stiker", "sgif"},
-		Category: "converter",
-		Quota:    core.PerUserQuota(1),
-		Handler:  runSticker,
+		Usage:     []string{"sticker", "s", "sk", "stiker", "sgif"},
+		UsageHint: "reply media",
+		Category:  "converter",
+		Quota:     core.PerUserQuota(1),
+		Handler:   runSticker,
 	})
 }
 
@@ -20,8 +21,7 @@ func runSticker(ptz *core.Ptz) error {
 		return ptz.ReplyText("❌ Kirim atau reply image/video yang ingin dijadikan sticker")
 	}
 
-	ptz.React("⏳")
-	defer ptz.Unreact()
+	ptz.React("🕒")
 
 	data, err := serialize.DownloadMedia(ptz.Bot.Client, input.Message)
 	if err != nil {

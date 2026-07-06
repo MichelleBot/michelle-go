@@ -76,6 +76,7 @@ func PerUserLimit(max int, window time.Duration) *CommandLimit {
 
 type Command struct {
 	Usage     []string
+	UsageHint string
 	Hidden    []string
 	Category  string
 	OwnerOnly bool

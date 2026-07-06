@@ -1,14 +1,195 @@
 package handler
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"michelle/system/core"
 	"michelle/system/serialize"
 )
+
+var antiLinkRegex = regexp.MustCompile(`(?i)\b(?:https?://)?(?:chat\.whatsapp\.com/[a-zA-Z0-9]+|wa\.me/[0-9*~_]+|whatsapp\.com/channel/[a-zA-Z0-9]+)`)
+
+func (h *EventHandler) handleAntiLink(ptz *core.Ptz) {
+	if !ptz.IsGroup {
+		return
+	}
+
+	var antilink bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antilink FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antilink)
+	if err != nil {
+		return
+	}
+
+	if err := ptz.LoadGroupInfo(); err != nil {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	text := core.ExtractBody(ptz.Message)
+	match := antiLinkRegex.FindAllString(text, -1)
+	if len(match) == 0 {
+		return
+	}
+
+	for range match {
+		// Delete
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+
+		// Kick if antilink enabled
+		if antilink {
+			h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+		}
+	}
+}
+
+func (h *EventHandler) handleAntiForward(ptz *core.Ptz) {
+	if !ptz.IsGroup {
+		return
+	}
+
+	var antiforward bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antiforward FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antiforward)
+	if err != nil || !antiforward {
+		return
+	}
+
+	if err := ptz.LoadGroupInfo(); err != nil {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	// Check if message is forwarded
+	isForwarded := false
+	if ptz.Message.ExtendedTextMessage != nil && ptz.Message.ExtendedTextMessage.ContextInfo != nil && ptz.Message.ExtendedTextMessage.ContextInfo.GetIsForwarded() {
+		isForwarded = true
+	} else if ptz.Message.ImageMessage != nil && ptz.Message.ImageMessage.ContextInfo != nil && ptz.Message.ImageMessage.ContextInfo.GetIsForwarded() {
+		isForwarded = true
+	} else if ptz.Message.VideoMessage != nil && ptz.Message.VideoMessage.ContextInfo != nil && ptz.Message.VideoMessage.ContextInfo.GetIsForwarded() {
+		isForwarded = true
+	}
+
+	if isForwarded {
+		// Delete
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+		// Kick
+		h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+	}
+}
+
+func (h *EventHandler) handleAntiSticker(ptz *core.Ptz) {
+	if !ptz.IsGroup {
+		return
+	}
+
+	var antisticker bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antisticker FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antisticker)
+	if err != nil || !antisticker {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	if ptz.Message.StickerMessage != nil {
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+	}
+}
+
+func (h *EventHandler) handleAntiVirtex(ptz *core.Ptz) {
+	if !ptz.IsGroup {
+		return
+	}
+
+	var antivirtex bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antivirtex FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antivirtex)
+	if err != nil || !antivirtex {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	text := core.ExtractBody(ptz.Message)
+	virtexRegex := regexp.MustCompile(`(?i)(৭৭৭৭৭৭৭৭|๒๒๒๒๒๒๒๒|๑๑๑๑๑๑๑๑|ดุท้่เึางืผิดุท้่เึางื)`)
+
+	if virtexRegex.MatchString(text) || len(text) > 10000 {
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+		h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+	}
+}
+
+func (h *EventHandler) handleAntiTagSW(ptz *core.Ptz) {
+	if !ptz.IsGroup {
+		return
+	}
+// ...
+
+	var antitagsw bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antitagsw FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antitagsw)
+	if err != nil || !antitagsw {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	// This is a placeholder for detection, as there is no direct GroupStatus in Go
+	if ptz.Message.ProtocolMessage == nil {
+		return
+	}
+
+	// Fetch member_data
+	var memberDataJSON string
+	err = h.bot.DB.Conn.QueryRow("SELECT member_data FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&memberDataJSON)
+	if err != nil {
+		return
+	}
+
+	type MemberInfo struct {
+		Warning int `json:"warning"`
+	}
+	memberData := make(map[string]*MemberInfo)
+	if memberDataJSON != "" {
+		json.Unmarshal([]byte(memberDataJSON), &memberData)
+	}
+
+	senderID := ptz.Sender.User
+	if _, ok := memberData[senderID]; !ok {
+		memberData[senderID] = &MemberInfo{}
+	}
+	memberData[senderID].Warning += 1
+	warning := memberData[senderID].Warning
+
+	updatedJSON, _ := json.Marshal(memberData)
+	h.bot.DB.Conn.Exec("UPDATE groups SET member_data = ? WHERE jid = ?", string(updatedJSON), ptz.Chat.String())
+
+	if warning >= 3 {
+		ptz.ReplyText(fmt.Sprintf("🚩 Warning : [ 3 / 3 ]"))
+		h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+	} else {
+		p := fmt.Sprintf("乂  *W A R N I N G* \n\nKamu mendapat +1 poin peringatan : [ %d / 3 ]\n\n> Jika kamu mendapatkan 3 poin peringatan, Kamu akan dikeluarkan dari grup ini.", warning)
+		ptz.ReplyText(p)
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+	}
+}
 
 func resolveSender(info types.MessageInfo) (phoneJID types.JID, displayName string) {
 	sender := info.Sender
@@ -83,10 +264,20 @@ func (h *EventHandler) handleMessageEvent(msg *core.NormalizedMessage) {
 		return
 	}
 
+    // Auto read
+    h.bot.Client.MarkRead(context.Background(), []types.MessageID{msg.Info.ID}, msg.Info.Timestamp, msg.Chat, msg.Sender)
+
 	h.logNormalizedMessage(msg)
 	h.trackMessage(msg)
 
 	ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
+	
+	h.handleAntiLink(ptz)
+	h.handleAntiForward(ptz)
+	h.handleAntiSticker(ptz)
+	h.handleAntiVirtex(ptz)
+	h.handleAntiTagSW(ptz)
+	
 	if !h.shouldProcessCommand(ptz) {
 		return
 	}

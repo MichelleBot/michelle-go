@@ -9,10 +9,11 @@ import (
 
 func init() {
 	core.Use(&core.Command{
-		Usage:    []string{"fakeff"},
-		Category: "converter",
-		Quota:    core.PerUserQuota(1),
-		Handler:  runFakeFF,
+		Usage:     []string{"fakeff"},
+		UsageHint: "text",
+		Category:  "converter",
+		Quota:     core.PerUserQuota(1),
+		Handler:   runFakeFF,
 	})
 }
 
@@ -27,7 +28,6 @@ func runFakeFF(ptz *core.Ptz) error {
 	}
 
 	ptz.React("🕒")
-	defer ptz.Unreact()
 
 	apiUrl := "https://satriacanvas.vercel.app/fake-ff?usr=" + url.QueryEscape(text)
 	data, err := utils.FetchAsBuffer(apiUrl)

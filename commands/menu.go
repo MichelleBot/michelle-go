@@ -65,7 +65,11 @@ func sendSimpleMenu(ptz *core.Ptz) error {
 			} else if i == count-1 {
 				prefix = "└  ◦  "
 			}
-			lines = append(lines, fmt.Sprintf("%s%s%s", prefix, prefixUsed, cmd.Usage[0]))
+			hint := ""
+			if cmd.UsageHint != "" {
+				hint = fmt.Sprintf(" *%s*", cmd.UsageHint)
+			}
+			lines = append(lines, fmt.Sprintf("%s%s%s%s", prefix, prefixUsed, cmd.Usage[0], hint))
 		}
 		return ptz.ReplyText(strings.Join(lines, "\n"))
 	}

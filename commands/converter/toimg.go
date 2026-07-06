@@ -7,10 +7,11 @@ import (
 
 func init() {
 	core.Use(&core.Command{
-		Usage:    []string{"toimg"},
-		Category: "converter",
-		Quota:    core.PerUserQuota(1),
-		Handler:  runToImg,
+		Usage:     []string{"toimg"},
+		UsageHint: "reply sticker",
+		Category:  "converter",
+		Quota:     core.PerUserQuota(1),
+		Handler:   runToImg,
 	})
 }
 
@@ -26,7 +27,6 @@ func runToImg(ptz *core.Ptz) error {
 	}
 
 	ptz.React("🕒")
-	defer ptz.Unreact()
 
 	// Download media stiker
 	data, err := serialize.DownloadMedia(ptz.Bot.Client, quotedMsg)
