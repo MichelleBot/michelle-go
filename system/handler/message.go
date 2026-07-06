@@ -343,6 +343,10 @@ func (h *EventHandler) enrichStoredMessage(stored *core.StoredMessage, msg *core
 }
 
 func (h *EventHandler) shouldProcessCommand(ptz *core.Ptz) bool {
+	if h.bot.BotConfig.GetFlag("self") && !ptz.IsOwner() {
+		return false
+	}
+
 	if h.bot.BotConfig.GetSelfMode() && !ptz.IsOwner() {
 		return false
 	}
@@ -352,6 +356,10 @@ func (h *EventHandler) shouldProcessCommand(ptz *core.Ptz) bool {
 	}
 
 	if h.bot.BotConfig.GetGroupOnly() && !ptz.IsGroup {
+		return false
+	}
+
+	if h.bot.BotConfig.GetFlag("groupmode") && !ptz.IsGroup && !ptz.IsOwner() && !h.bot.Users.IsPremium(ptz.Sender.User) {
 		return false
 	}
 

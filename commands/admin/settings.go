@@ -9,10 +9,10 @@ import (
 
 func init() {
 	usage := []string{
-		"adzan", "antiphishing", "antiporn", "autoreply", "antidelete",
-		"antiforward", "autosticker", "adminonly", "antibot", "antilink",
-		"antivirtex", "antisticker", "restrict", "left", "filter",
-		"localonly", "welcome", "game", "mysterybox", "antitagsw", "captcha",
+		"antiforward", "autosticker", "adminonly", "antibot", 
+		"antilink", "antivirtex", "antisticker", "left", 
+		"filter", "localonly", "welcome", "game", "mysterybox", 
+		"antitagsw",
 	}
 
 	for _, cmd := range usage {
@@ -30,13 +30,7 @@ func init() {
 func runSettings(ptz *core.Ptz) error {
 	typeField := ptz.Command
 	
-	// Map command name to DB field
 	fieldMap := map[string]string{
-		"adzan":        "adzan",
-		"antiphishing": "antiphishing",
-		"antiporn":     "antiporn",
-		"autoreply":    "filter", // Assuming autoreply uses filter
-		"antidelete":   "antidelete",
 		"antiforward":  "antiforward",
 		"autosticker":  "autosticker",
 		"adminonly":    "adminonly",
@@ -44,7 +38,6 @@ func runSettings(ptz *core.Ptz) error {
 		"antilink":     "antilink",
 		"antivirtex":   "antivirtex",
 		"antisticker":  "antisticker",
-		"restrict":     "restrict",
 		"left":         "left",
 		"filter":       "filter",
 		"localonly":    "localonly",
@@ -52,7 +45,6 @@ func runSettings(ptz *core.Ptz) error {
 		"game":         "game",
 		"mysterybox":   "mysterybox",
 		"antitagsw":    "antitagsw",
-		"captcha":      "captcha",
 	}
 
 	dbField, ok := fieldMap[typeField]

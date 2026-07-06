@@ -49,12 +49,11 @@ type UserStore struct {
 }
 
 type GroupSettings struct {
-	WelcomeEnabled    bool
-	WelcomeMessage    string
-	GoodbyeEnabled    bool
-	GoodbyeMessage    string
-	AntispamEnabled   bool
-	AntiDeleteEnabled bool
+	WelcomeEnabled  bool
+	WelcomeMessage  string
+	GoodbyeEnabled  bool
+	GoodbyeMessage  string
+	AntispamEnabled bool
 }
 
 type BotSettings struct {
@@ -62,6 +61,7 @@ type BotSettings struct {
 	SelfMode    bool
 	PrivateOnly bool
 	GroupOnly   bool
+	Flags       map[string]bool
 }
 
 func NewSettingsStore(db *sql.DB, log waLog.Logger) *SettingsStore {
@@ -88,13 +88,11 @@ func (s *SettingsStore) migrate() {
 		welcome_message  TEXT NOT NULL DEFAULT '',
 		goodbye_enabled  INTEGER NOT NULL DEFAULT 0,
 		goodbye_message  TEXT NOT NULL DEFAULT '',
-		antispam_enabled INTEGER NOT NULL DEFAULT 0,
-		anti_delete_enabled INTEGER NOT NULL DEFAULT 0
+		antispam_enabled INTEGER NOT NULL DEFAULT 0
 	)`)
 	if err != nil && s.log != nil {
 		s.log.Errorf("DB migrate error: %v", err)
 	}
-	_, _ = s.db.Exec(`ALTER TABLE group_settings ADD COLUMN anti_delete_enabled INTEGER NOT NULL DEFAULT 0`)
 }
 
 func (u *UserStore) migrate() {
@@ -439,7 +437,7 @@ func maxInt(a, b int) int {
 
 func (s *SettingsStore) loadAll() {
 	rows, err := s.db.Query(`SELECT chat_jid, welcome_enabled, welcome_message,
-		goodbye_enabled, goodbye_message, antispam_enabled, anti_delete_enabled FROM group_settings`)
+		goodbye_enabled, goodbye_message, antispam_enabled FROM group_settings`)
 	if err != nil {
 		if s.log != nil {
 			s.log.Errorf("DB loadAll error: %v", err)
@@ -449,9 +447,9 @@ func (s *SettingsStore) loadAll() {
 	defer rows.Close()
 	for rows.Next() {
 		var jidStr string
-		var we, ge, ae, ade int
+		var we, ge, ae int
 		gs := &GroupSettings{}
-		if err := rows.Scan(&jidStr, &we, &gs.WelcomeMessage, &ge, &gs.GoodbyeMessage, &ae, &ade); err != nil {
+		if err := rows.Scan(&jidStr, &we, &gs.WelcomeMessage, &ge, &gs.GoodbyeMessage, &ae); err != nil {
 			if s.log != nil {
 				s.log.Errorf("DB scan error: %v", err)
 			}
@@ -460,7 +458,6 @@ func (s *SettingsStore) loadAll() {
 		gs.WelcomeEnabled = we == 1
 		gs.GoodbyeEnabled = ge == 1
 		gs.AntispamEnabled = ae == 1
-		gs.AntiDeleteEnabled = ade == 1
 		jid, err := types.ParseJID(jidStr)
 		if err != nil {
 			continue
@@ -484,7 +481,6 @@ func (s *SettingsStore) GetGroupSettings(jid types.JID) *GroupSettings {
 		GoodbyeEnabled:    false,
 		GoodbyeMessage:    "Selamat tinggal @user!",
 		AntispamEnabled:   false,
-		AntiDeleteEnabled: false,
 	}
 }
 
@@ -492,7 +488,7 @@ func (s *SettingsStore) SetGroupSettings(jid types.JID, gs *GroupSettings) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.settings[jid] = gs
-	we, ge, ae, ade := 0, 0, 0, 0
+	we, ge, ae := 0, 0, 0
 	if gs.WelcomeEnabled {
 		we = 1
 	}
@@ -502,13 +498,10 @@ func (s *SettingsStore) SetGroupSettings(jid types.JID, gs *GroupSettings) {
 	if gs.AntispamEnabled {
 		ae = 1
 	}
-	if gs.AntiDeleteEnabled {
-		ade = 1
-	}
 	_, err := s.db.Exec(`INSERT OR REPLACE INTO group_settings
-		(chat_jid, welcome_enabled, welcome_message, goodbye_enabled, goodbye_message, antispam_enabled, anti_delete_enabled)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		jid.String(), we, gs.WelcomeMessage, ge, gs.GoodbyeMessage, ae, ade,
+		(chat_jid, welcome_enabled, welcome_message, goodbye_enabled, goodbye_message, antispam_enabled)
+		VALUES (?, ?, ?, ?, ?, ?)`,
+		jid.String(), we, gs.WelcomeMessage, ge, gs.GoodbyeMessage, ae,
 	)
 	if err != nil && s.log != nil {
 		s.log.Errorf("DB save error: %v", err)
@@ -516,7 +509,9 @@ func (s *SettingsStore) SetGroupSettings(jid types.JID, gs *GroupSettings) {
 }
 
 func NewBotSettings() *BotSettings {
-	return &BotSettings{}
+	return &BotSettings{
+		Flags: make(map[string]bool),
+	}
 }
 
 func (bs *BotSettings) GetSelfMode() bool {
@@ -553,4 +548,16 @@ func (bs *BotSettings) SetGroupOnly(v bool) {
 	bs.mu.Lock()
 	defer bs.mu.Unlock()
 	bs.GroupOnly = v
+}
+
+func (bs *BotSettings) GetFlag(name string) bool {
+	bs.mu.RLock()
+	defer bs.mu.RUnlock()
+	return bs.Flags[name]
+}
+
+func (bs *BotSettings) SetFlag(name string, v bool) {
+	bs.mu.Lock()
+	defer bs.mu.Unlock()
+	bs.Flags[name] = v
 }
