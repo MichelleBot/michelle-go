@@ -20,6 +20,7 @@ type Ptz struct {
 	Args      []string
 	RawArgs   string
 	Command   string
+	Prefix    string
 	IsGroup   bool
 	IsFromMe  bool
 	Sender    types.JID
@@ -30,7 +31,7 @@ type Ptz struct {
 
 func NewPtz(bot *Bot, evt *events.Message) *Ptz {
 	body := ExtractBody(evt.Message)
-	parts, cmd, rawArgs, args := parseCommandParts(bot, body)
+	parts, cmd, rawArgs, args, prefix := parseCommandParts(bot, body)
 
 	_ = parts
 
@@ -42,6 +43,7 @@ func NewPtz(bot *Bot, evt *events.Message) *Ptz {
 		Args:      args,
 		RawArgs:   rawArgs,
 		Command:   cmd,
+		Prefix:    prefix,
 		IsGroup:   evt.Info.IsGroup,
 		IsFromMe:  evt.Info.IsFromMe,
 		Sender:    evt.Info.Sender,
@@ -55,7 +57,7 @@ func NewPtzFromNormalizedMessage(bot *Bot, msg *NormalizedMessage) *Ptz {
 		return nil
 	}
 
-	_, cmd, rawArgs, args := parseCommandParts(bot, msg.Body)
+	_, cmd, rawArgs, args, prefix := parseCommandParts(bot, msg.Body)
 
 	return &Ptz{
 		Bot:       bot,
@@ -65,6 +67,7 @@ func NewPtzFromNormalizedMessage(bot *Bot, msg *NormalizedMessage) *Ptz {
 		Args:      args,
 		RawArgs:   rawArgs,
 		Command:   cmd,
+		Prefix:    prefix,
 		IsGroup:   msg.IsGroup,
 		IsFromMe:  msg.IsFromMe,
 		Sender:    msg.Sender,
@@ -73,14 +76,15 @@ func NewPtzFromNormalizedMessage(bot *Bot, msg *NormalizedMessage) *Ptz {
 	}
 }
 
-func parseCommandParts(bot *Bot, body string) ([]string, string, string, []string) {
+func parseCommandParts(bot *Bot, body string) ([]string, string, string, []string, string) {
 	body = strings.TrimSpace(body)
-	var cmd, rawArgs string
+	var cmd, rawArgs, usedPrefix string
 	args := []string{}
 	var parts []string
 
 	for _, prefix := range bot.Config.Prefixes {
 		if strings.HasPrefix(body, prefix) {
+			usedPrefix = prefix
 			trimmedBody := strings.TrimSpace(strings.TrimPrefix(body, prefix))
 			parts = strings.Fields(trimmedBody)
 			if len(parts) > 0 {
@@ -95,7 +99,7 @@ func parseCommandParts(bot *Bot, body string) ([]string, string, string, []strin
 		}
 	}
 
-	return parts, cmd, rawArgs, args
+	return parts, cmd, rawArgs, args, usedPrefix
 }
 
 func ExtractBody(msg *waE2E.Message) string {

@@ -170,10 +170,21 @@ func Use(cmd *Command) {
 
 func (c *Command) Execute(ptz *Ptz) error {
 	if c.GroupOnly && !ptz.IsGroup {
+		ptz.ReplyText(Status["group"])
 		return nil
 	}
 
+	if ptz.IsGroup {
+		var isMuted bool
+		err := ptz.Bot.DB.Conn.QueryRow("SELECT mute FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&isMuted)
+		// Allow 'mute' command to pass through to toggle status
+		if err == nil && isMuted && ptz.Command != "mute" && !ptz.IsAdmin() && !ptz.IsOwner() {
+			return nil
+		}
+	}
+
 	if c.OwnerOnly && !ptz.IsOwner() {
+		ptz.ReplyText(Status["owner"])
 		return nil
 	}
 
@@ -185,11 +196,12 @@ func (c *Command) Execute(ptz *Ptz) error {
 	}
 
 	if c.AdminOnly && !ptz.IsAdmin() && !ptz.IsOwner() {
+		ptz.ReplyText(Status["admin"])
 		return nil
 	}
 
 	if c.BotAdmin && !ptz.IsBotAdmin() {
-		ptz.ReplyText("❌ Bot harus jadi admin dulu.")
+		ptz.ReplyText(Status["botAdmin"])
 		return nil
 	}
 
@@ -201,9 +213,9 @@ func (c *Command) Execute(ptz *Ptz) error {
 	}
 
 	if c.Limit != nil && c.Limit.Enabled && ptz.Bot != nil && ptz.Bot.CommandLimiter != nil {
-		allowed, retryAfter := ptz.Bot.CommandLimiter.Allow(c.Usage[0], ptz.Sender.User, c.Limit.Max, c.Limit.Window)
+		allowed, _ := ptz.Bot.CommandLimiter.Allow(c.Usage[0], ptz.Sender.User, c.Limit.Max, c.Limit.Window)
 		if !allowed {
-			ptz.ReplyText(fmt.Sprintf("Limit command %s habis coba lagi dalam %s", c.Usage[0], formatRetryAfter(retryAfter)))
+			ptz.ReplyText("⚠️ Kamu telah mencapai limit dan akan direset pada pukul 00.00.\n\nUntuk mendapatkan limit yang lebih banyak, tingkatkan ke paket premium.")
 			return nil
 		}
 	}

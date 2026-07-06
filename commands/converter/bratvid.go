@@ -21,7 +21,7 @@ func init() {
 
 func runBratVid(ptz *core.Ptz) error {
 	if len(ptz.Args) == 0 {
-		return ptz.ReplyText(fmt.Sprintf("• *Example* : %sbratvid michelle", ptz.Bot.GetPrefix()))
+		return ptz.ReplyText(utils.Example(ptz.Prefix, "bratvid", "michelle"))
 	}
 
 	text := ptz.RawArgs

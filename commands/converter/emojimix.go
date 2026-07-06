@@ -23,7 +23,7 @@ func init() {
 
 func runEmojimix(ptz *core.Ptz) error {
 	if ptz.RawArgs == "" {
-		return ptz.ReplyText(fmt.Sprintf("• *Example* : %semojimix 😳+😩", ptz.Bot.GetPrefix()))
+		return ptz.ReplyText(utils.Example(ptz.Prefix, "emojimix", "😳+😩"))
 	}
 
 	parts := strings.Split(ptz.RawArgs, "+")

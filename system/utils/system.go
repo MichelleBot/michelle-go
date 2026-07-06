@@ -17,6 +17,80 @@ func UcWord(str string) string {
 	return strings.Title(str)
 }
 
+func Example(prefix string, command string, arg string) string {
+	return fmt.Sprintf("• *Example* : %s%s %s", prefix, command, arg)
+}
+
+func IsBot(id string) bool {
+	return id != "" && (strings.HasPrefix(id, "3EB0") || strings.HasPrefix(id, "BAE") || strings.Contains(id, "-") || strings.Contains(strings.ToLower(id), "neoxr"))
+}
+
+func DetectBadword(input string, badwords []string) bool {
+	mapSimilar := map[string]string{
+		"i": "l1", "l": "i1", "1": "il", "o": "0", "0": "o", "a": "4",
+		"4": "a", "e": "3", "3": "e", "b": "8", "8": "b", "s": "5",
+		"5": "s", "t": "7", "7": "t", "g": "9", "9": "g",
+	}
+
+	normalize := func(str string) string {
+		str = strings.ToLower(str)
+		var res strings.Builder
+		for _, c := range str {
+			char := string(c)
+			found := false
+			for key, val := range mapSimilar {
+				if key == char || strings.Contains(val, char) {
+					res.WriteString(key)
+					found = true
+					break
+				}
+			}
+			if !found {
+				res.WriteString(char)
+			}
+		}
+		return res.String()
+	}
+
+	normalizedInput := normalize(input)
+	for _, word := range badwords {
+		if strings.Contains(normalizedInput, normalize(word)) {
+			return true
+		}
+	}
+	return false
+}
+
+func Styles(text string) string {
+	mapping := map[rune]rune{
+		'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ꜰ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ',
+		'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ',
+		's': 'ꜱ', 't': 'ᴛ', 'u': 'ᴜ', 'v': 'ᴠ', 'w': 'ᴡ', 'x': 'x', 'y': 'ʏ', 'z': 'ᴢ',
+	}
+	var res strings.Builder
+	for _, r := range strings.ToLower(text) {
+		if val, ok := mapping[r]; ok {
+			res.WriteRune(val)
+		} else {
+			res.WriteRune(r)
+		}
+	}
+	return res.String()
+}
+
+func Texted(style string, text string) string {
+	switch style {
+	case "bold":
+		return "*" + text + "*"
+	case "italic":
+		return "_" + text + "_"
+	case "monospace":
+		return "```" + text + "```"
+	default:
+		return text
+	}
+}
+
 func FetchAsJSON(url string) (map[string]interface{}, error) {
 	resp, err := http.Get(url)
 	if err != nil {

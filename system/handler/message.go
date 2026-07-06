@@ -5,17 +5,99 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"michelle/system/core"
 	"michelle/system/serialize"
+	"michelle/system/utils"
 )
 
 var antiLinkRegex = regexp.MustCompile(`(?i)\b(?:https?://)?(?:chat\.whatsapp\.com/[a-zA-Z0-9]+|wa\.me/[0-9*~_]+|whatsapp\.com/channel/[a-zA-Z0-9]+)`)
+
+func (h *EventHandler) handleAntiToxic(ptz *core.Ptz) {
+	if ptz.IsFromMe || !ptz.IsGroup {
+		return
+	}
+
+	var groupSettingsJSON string
+	err := h.bot.DB.Conn.QueryRow("SELECT filter, toxic, member_data FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(nil, nil, &groupSettingsJSON) // Simplify to just getting what we need. Wait, need filter and toxic.
+	// Actually query all for now
+	var filterEnabled bool
+	var toxicJSON string
+	var memberDataJSON string
+	err = h.bot.DB.Conn.QueryRow("SELECT filter, toxic, member_data FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&filterEnabled, &toxicJSON, &memberDataJSON)
+	if err != nil || !filterEnabled {
+		return
+	}
+
+	if ptz.IsAdmin() || ptz.IsOwner() {
+		return
+	}
+
+	toxicWords := []string{}
+	json.Unmarshal([]byte(toxicJSON), &toxicWords)
+
+	text := core.ExtractBody(ptz.Message)
+	if !utils.DetectBadword(text, toxicWords) {
+		return
+	}
+
+	type MemberInfo struct {
+		Warning int `json:"warning"`
+	}
+	memberData := make(map[string]*MemberInfo)
+	if memberDataJSON != "" {
+		json.Unmarshal([]byte(memberDataJSON), &memberData)
+	}
+
+	senderID := ptz.Sender.User
+	if _, ok := memberData[senderID]; !ok {
+		memberData[senderID] = &MemberInfo{}
+	}
+	memberData[senderID].Warning += 1
+	warning := memberData[senderID].Warning
+
+	if warning >= 5 {
+		ptz.ReplyText("🚩 Warning : [ 5 / 5 ]")
+		h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+		delete(memberData, senderID)
+	} else {
+		p := fmt.Sprintf("乂  *W A R N I N G* \n\nKamu mendapat +1 poin peringatan : [ %d / 5 ]\n\n> Jika kamu mendapatkan 5 poin peringatan, Kamu akan dikeluarkan dari grup ini.", warning)
+		ptz.ReplyText(p)
+	}
+
+	updatedJSON, _ := json.Marshal(memberData)
+	h.bot.DB.Conn.Exec("UPDATE groups SET member_data = ? WHERE jid = ?", string(updatedJSON), ptz.Chat.String())
+
+	h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+}
+
+func (h *EventHandler) handleAntiBot(ptz *core.Ptz) {
+	if ptz.IsFromMe || !ptz.IsGroup {
+		return
+	}
+
+	var antibot bool
+	err := h.bot.DB.Conn.QueryRow("SELECT antibot FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antibot)
+	if err != nil || !antibot {
+		return
+	}
+
+	if ptz.IsOwner() {
+		return
+	}
+
+	if utils.IsBot(ptz.Info.ID) && ptz.IsBotAdmin() {
+		ptz.ReplyText("⚠ Bot lain tidak diperbolehkan di grup ini.")
+		
+		time.Sleep(1200 * time.Millisecond)
+		
+		h.bot.Client.SendMessage(context.Background(), ptz.Chat, h.bot.Client.BuildRevoke(ptz.Chat, ptz.Sender, ptz.Info.ID))
+		h.bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{ptz.Sender}, whatsmeow.ParticipantChangeRemove)
+	}
+}
 
 func (h *EventHandler) handleAntiLink(ptz *core.Ptz) {
 	if !ptz.IsGroup {
@@ -138,7 +220,6 @@ func (h *EventHandler) handleAntiTagSW(ptz *core.Ptz) {
 	if !ptz.IsGroup {
 		return
 	}
-// ...
 
 	var antitagsw bool
 	err := h.bot.DB.Conn.QueryRow("SELECT antitagsw FROM groups WHERE jid = ?", ptz.Chat.String()).Scan(&antitagsw)
@@ -191,70 +272,6 @@ func (h *EventHandler) handleAntiTagSW(ptz *core.Ptz) {
 	}
 }
 
-func resolveSender(info types.MessageInfo) (phoneJID types.JID, displayName string) {
-	sender := info.Sender
-	alt := info.SenderAlt
-
-	if sender.Server == types.HiddenUserServer {
-		if !alt.IsEmpty() && alt.Server == types.DefaultUserServer {
-			phoneJID = types.NewJID(alt.User, types.DefaultUserServer)
-		} else {
-			phoneJID = types.NewJID(sender.User, types.DefaultUserServer)
-		}
-	} else {
-		phoneJID = types.NewJID(sender.User, types.DefaultUserServer)
-	}
-
-	if info.PushName != "" && info.PushName != "-" {
-		displayName = info.PushName
-	} else {
-		displayName = phoneJID.User
-	}
-	return
-}
-
-func isCommand(text string, prefixes []string) bool {
-	for _, p := range prefixes {
-		if strings.HasPrefix(text, p) {
-			return true
-		}
-	}
-	return false
-}
-
-func getReplyInfo(msg *waE2E.Message) (quotedID, userAnswer string) {
-	if msg == nil {
-		return "", ""
-	}
-
-	switch {
-	case msg.ExtendedTextMessage != nil:
-		ctx := msg.ExtendedTextMessage.GetContextInfo()
-		if ctx.GetStanzaID() == "" {
-			return "", ""
-		}
-		return ctx.GetStanzaID(), strings.TrimSpace(msg.ExtendedTextMessage.GetText())
-
-	case msg.ImageMessage != nil:
-		ctx := msg.ImageMessage.GetContextInfo()
-		return ctx.GetStanzaID(), strings.TrimSpace(msg.ImageMessage.GetCaption())
-
-	case msg.VideoMessage != nil:
-		ctx := msg.VideoMessage.GetContextInfo()
-		return ctx.GetStanzaID(), strings.TrimSpace(msg.VideoMessage.GetCaption())
-
-	case msg.AudioMessage != nil:
-		ctx := msg.AudioMessage.GetContextInfo()
-		return ctx.GetStanzaID(), ""
-
-	case msg.DocumentMessage != nil:
-		ctx := msg.DocumentMessage.GetContextInfo()
-		return ctx.GetStanzaID(), strings.TrimSpace(msg.DocumentMessage.GetCaption())
-	}
-
-	return "", ""
-}
-
 func (h *EventHandler) handleMessageEvent(msg *core.NormalizedMessage) {
 	if msg == nil || msg.Message == nil || msg.Event == nil {
 		return
@@ -272,6 +289,8 @@ func (h *EventHandler) handleMessageEvent(msg *core.NormalizedMessage) {
 
 	ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
 	
+	h.handleAntiToxic(ptz)
+	h.handleAntiBot(ptz)
 	h.handleAntiLink(ptz)
 	h.handleAntiForward(ptz)
 	h.handleAntiSticker(ptz)

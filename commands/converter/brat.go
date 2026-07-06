@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"fmt"
 	"net/url"
 
 	"michelle/system/core"
@@ -21,7 +20,7 @@ func init() {
 
 func runBrat(ptz *core.Ptz) error {
 	if ptz.RawArgs == "" {
-		return ptz.ReplyText(fmt.Sprintf("• *Example* : %sbrat michelle", ptz.Bot.GetPrefix()))
+		return ptz.ReplyText(utils.Example(ptz.Prefix, "brat", "michelle"))
 	}
 
 	if len(ptz.RawArgs) > 100 {
