@@ -9,8 +9,11 @@ import (
 
 	_ "michelle/commands"
 	_ "michelle/commands/admin"
+	_ "michelle/commands/ai"
 	_ "michelle/commands/converter"
+	_ "michelle/commands/download"
 	_ "michelle/commands/miscs"
+	_ "michelle/commands/owner"
 
 	"michelle/system/config"
 	"michelle/system/core"

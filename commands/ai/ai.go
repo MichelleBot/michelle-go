@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"michelle/system/core"
+	"michelle/system/serialize"
 )
 
 func init() {
 	core.Use(&core.Command{
-		Usage:     []string{"ai", "blackbox", "deepseek"},
+		Usage:     []string{"ai", "deepseek"},
 		UsageHint: "query",
 		Category:  "ai",
 		Quota:     core.PerUserQuota(1),
@@ -20,9 +22,11 @@ func init() {
 }
 
 type APIResponse struct {
-	Status bool   `json:"status"`
-	Result string `json:"result"`
-	Data   struct {
+	Status  bool   `json:"status"`
+	Result  string `json:"result"`
+	Message string `json:"message"`
+	Reply   string `json:"reply"`
+	Data    struct {
 		Reply string `json:"reply"`
 	} `json:"data"`
 }
@@ -32,18 +36,16 @@ func handleAI(ptz *core.Ptz) error {
 		return ptz.ReplyText(fmt.Sprintf("🚩 Contoh penggunaan: %s%s apa itu nodejs", ptz.Prefix, ptz.Command))
 	}
 
-	ptz.Bot.Client.SendReaction(ptz.Chat, ptz.Info.ID, "🕒")
+	serialize.SendReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
 	text := strings.Join(ptz.Args, " ")
 	var result string
 	var err error
 
 	switch ptz.Command {
 	case "ai":
-		result, err = fetchAI("https://api.alwayscodex.my.id/api/ai/gpt5?teks=" + text)
-	case "blackbox":
-		result, err = fetchAI("https://api.alwayscodex.my.id/api/ai/blackbox?teks=" + text)
+		result, err = fetchAI("https://api.alwayscodex.my.id/api/ai/gpt5?teks=" + url.QueryEscape(text))
 	case "deepseek":
-		result, err = fetchDeepseek("https://www.neoapis.xyz/api/ai/deepseek?text=" + text)
+		result, err = fetchDeepseek("https://www.neoapis.xyz/api/ai/deepseek?text=" + url.QueryEscape(text))
 	default:
 		return nil
 	}
@@ -55,8 +57,8 @@ func handleAI(ptz *core.Ptz) error {
 	return ptz.ReplyText(strings.ReplaceAll(result, "**", "*"))
 }
 
-func fetchAI(url string) (string, error) {
-	resp, err := http.Get(url)
+func fetchAI(urlStr string) (string, error) {
+	resp, err := http.Get(urlStr)
 	if err != nil {
 		return "", err
 	}
@@ -69,11 +71,17 @@ func fetchAI(url string) (string, error) {
 	if !res.Status {
 		return "", fmt.Errorf("Tidak ada respon.")
 	}
-	return res.Result, nil
+    
+    if res.Result != "" { return res.Result, nil }
+    if res.Reply != "" { return res.Reply, nil }
+    if res.Message != "" { return res.Message, nil }
+    if res.Data.Reply != "" { return res.Data.Reply, nil }
+    
+	return "", fmt.Errorf("Respon kosong.")
 }
 
-func fetchDeepseek(url string) (string, error) {
-	resp, err := http.Get(url)
+func fetchDeepseek(urlStr string) (string, error) {
+	resp, err := http.Get(urlStr)
 	if err != nil {
 		return "", err
 	}
@@ -88,4 +96,3 @@ func fetchDeepseek(url string) (string, error) {
 	}
 	return res.Data.Reply, nil
 }
-`, file_path: "commands/ai/ai.go")

@@ -301,7 +301,14 @@ func (h *EventHandler) handleMessageEvent(msg *core.NormalizedMessage) {
 		return
 	}
 
-	h.executeCommand(ptz)
+	go func(p *core.Ptz) {
+		defer func() {
+			if r := recover(); r != nil {
+				h.bot.Log.Errorf("Recovered from panic in async command %s: %v", p.Command, r)
+			}
+		}()
+		h.executeCommand(p)
+	}(ptz)
 }
 
 func (h *EventHandler) trackMessage(msg *core.NormalizedMessage) {

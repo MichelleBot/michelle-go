@@ -54,6 +54,7 @@ type GroupSettings struct {
 	GoodbyeEnabled  bool
 	GoodbyeMessage  string
 	AntispamEnabled bool
+	AntiDeleteEnabled bool
 }
 
 type BotSettings struct {
@@ -88,7 +89,8 @@ func (s *SettingsStore) migrate() {
 		welcome_message  TEXT NOT NULL DEFAULT '',
 		goodbye_enabled  INTEGER NOT NULL DEFAULT 0,
 		goodbye_message  TEXT NOT NULL DEFAULT '',
-		antispam_enabled INTEGER NOT NULL DEFAULT 0
+		antispam_enabled INTEGER NOT NULL DEFAULT 0,
+		antidelete_enabled INTEGER NOT NULL DEFAULT 0
 	)`)
 	if err != nil && s.log != nil {
 		s.log.Errorf("DB migrate error: %v", err)

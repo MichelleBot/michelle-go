@@ -56,21 +56,24 @@ func sendSimpleMenu(ptz *core.Ptz) error {
 			}
 		}
 
-		lines := make([]string, 0, len(filteredCmds))
-		count := len(filteredCmds)
-		for i, cmd := range filteredCmds {
-			prefix := "│  ◦  "
-			if i == 0 {
-				prefix = "┌  ◦  "
-			} else if i == count-1 {
-				prefix = "└  ◦  "
-			}
+		lines := make([]string, 0)
+		for _, cmd := range filteredCmds {
 			hint := ""
 			if cmd.UsageHint != "" {
 				hint = fmt.Sprintf(" *%s*", cmd.UsageHint)
 			}
-			lines = append(lines, fmt.Sprintf("%s%s%s%s", prefix, prefixUsed, cmd.Usage[0], hint))
+			
+			for _, usage := range cmd.Usage {
+				lines = append(lines, fmt.Sprintf("│  ◦  %s%s%s", prefixUsed, usage, hint))
+			}
 		}
+
+		// Adjust first and last prefix
+		if len(lines) > 0 {
+			lines[0] = strings.Replace(lines[0], "│", "┌", 1)
+			lines[len(lines)-1] = strings.Replace(lines[len(lines)-1], "│", "└", 1)
+		}
+		
 		return ptz.ReplyText(strings.Join(lines, "\n"))
 	}
 

@@ -10,6 +10,13 @@ type DB struct {
 }
 
 func NewDB(db *sql.DB) (*DB, error) {
+	// Enable WAL mode for better concurrency
+	if _, err := db.Exec("PRAGMA journal_mode=WAL;"); err != nil {
+		return nil, err
+	}
+	// Configure connection pool
+	db.SetMaxOpenConns(1) // SQLite only supports one writer at a time
+	
 	d := &DB{Conn: db}
 	err := d.migrate()
 	return d, err

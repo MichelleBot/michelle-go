@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"michelle/system/core"
+	"michelle/system/serialize"
 	"michelle/system/utils"
 )
 
@@ -29,7 +30,7 @@ func handleTikTok(ptz *core.Ptz) error {
 		return ptz.ReplyText("🚩 Link tidak valid.")
 	}
 
-	ptz.Bot.Client.SendReaction(ptz.Chat, ptz.Info.ID, "🕒")
+	serialize.SendReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
 
 	data, err := utils.ScraperTikTok(url)
 	if err != nil {
@@ -65,21 +66,27 @@ func handleTikTok(ptz *core.Ptz) error {
 			data.ID, data.Author.Nickname, data.Author.UniqueID, data.PlayCount, data.DiggCount, data.CommentCount, data.ShareCount, data.DownloadCount, postedAt,
 			data.MusicInfo.Title, data.MusicInfo.Author, data.MusicInfo.Duration, data.MusicInfo.Original, data.MusicInfo.Album != "", data.Title)
 
-		if len(data.Images) > 0 {
-			for _, imgURL := range data.Images {
-				ptz.Bot.Client.SendImage(ptz.Chat, imgURL, "", ptz.Info.ID)
+		if data.Play != "" {
+			videoData, err := serialize.Fetch(data.Play)
+			if err != nil {
+				return ptz.ReplyText("🚩 Error fetching video: " + err.Error())
 			}
-		} else if data.Play != "" {
-			return ptz.Bot.Client.SendVideo(ptz.Chat, data.Play, caption, ptz.Info.ID)
+			return ptz.ReplyVideo(videoData, "video/mp4", caption)
+		} else {
+			return ptz.ReplyText("🚩 Error: No video found in API response.")
 		}
 	case "tikwm":
-		return ptz.Bot.Client.SendVideo(ptz.Chat, data.WmPlay, "🍟", ptz.Info.ID)
+		return ptz.ReplyVideo(nil, "video/mp4", "🍟")
 	case "tikmp3":
 		musicURL := data.Music
 		if musicURL == "" {
 			musicURL = data.MusicInfo.Play
 		}
-		return ptz.Bot.Client.SendAudio(ptz.Chat, musicURL, true, ptz.Info.ID)
+		musicData, err := serialize.Fetch(musicURL)
+		if err != nil {
+			return ptz.ReplyText("🚩 Error fetching audio: " + err.Error())
+		}
+		return ptz.ReplyAudio(musicData, "audio/mpeg")
 	}
 
 	return nil
