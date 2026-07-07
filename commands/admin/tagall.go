@@ -11,7 +11,7 @@ import (
 
 func init() {
 	core.Use(&core.Command{
-		Usage:     []string{"tagall", "everyone", "all"},
+		Usage:     []string{"tagall", "everyone"},
 		UsageHint: "text (optional)",
 		Category:  "admin",
 		GroupOnly: true,

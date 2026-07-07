@@ -14,7 +14,7 @@ import (
 	_ "michelle/commands/download"
 	_ "michelle/commands/miscs"
 	_ "michelle/commands/owner"
-
+	_ "michelle/commands/utilities"
 	"michelle/system/config"
 	"michelle/system/core"
 	"michelle/system/handler"

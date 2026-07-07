@@ -299,6 +299,10 @@ func (ptz *Ptz) ReplyTextMention(text string, mentionedJIDs []types.JID) error {
 	return serialize.SendTextReplyMention(ptz.Bot.Client, ptz.Chat, text, mentionedJIDs, ptz.Message, ptz.Info)
 }
 
+func (ptz *Ptz) SendTextMention(text string, mentionedJIDs []types.JID) error {
+	return serialize.SendTextMention(ptz.Bot.Client, ptz.Chat, text, mentionedJIDs)
+}
+
 func (ptz *Ptz) ContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), timeout)
 }

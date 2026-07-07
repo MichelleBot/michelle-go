@@ -104,8 +104,13 @@ func (r *Registry) Register(cmd *Command) {
 	if _, ok := r.commands[primary]; ok {
 		return
 	}
+	// Register primary usages
 	for _, usage := range cmd.Usage {
 		r.commands[usage] = cmd
+	}
+	// Register hidden aliases so they are executable
+	for _, hidden := range cmd.Hidden {
+		r.commands[hidden] = cmd
 	}
 }
 

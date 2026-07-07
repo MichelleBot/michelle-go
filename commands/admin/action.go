@@ -21,12 +21,6 @@ func init() {
 		BotAdmin:  true,
 		Handler:   runAction,
 	})
-	core.Use(&core.Command{
-		Usage:    []string{"remove"},
-		Category: "admin",
-		Hidden:   []string{"run"},
-		Handler:  runAction,
-	})
 
 	// Promote
 	core.Use(&core.Command{
@@ -38,12 +32,6 @@ func init() {
 		BotAdmin:  true,
 		Handler:   runAction,
 	})
-	core.Use(&core.Command{
-		Usage:    []string{"admin"},
-		Category: "admin",
-		Hidden:   []string{"run"},
-		Handler:  runAction,
-	})
 
 	// Demote
 	core.Use(&core.Command{
@@ -54,12 +42,6 @@ func init() {
 		AdminOnly: true,
 		BotAdmin:  true,
 		Handler:   runAction,
-	})
-	core.Use(&core.Command{
-		Usage:    []string{"unadmin"},
-		Category: "admin",
-		Hidden:   []string{"run"},
-		Handler:  runAction,
 	})
 }
 
