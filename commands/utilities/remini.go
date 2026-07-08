@@ -46,7 +46,7 @@ func runRemini(ptz *core.Ptz) error {
 	ptz.React("🕒")
 	ptz.Bot.Log.Infof("Remini process started for %s", ptz.Sender.User)
 
-	data, err := serialize.DownloadMedia(ptz.Bot.Client, quotedMsg)
+	data, err := serialize.DownloadMedia(ptz.Client, quotedMsg)
 	if err != nil {
 		ptz.Bot.Log.Errorf("Download failed: %v", err)
 		return ptz.ReplyText("❌ Gagal mendownload media: " + err.Error())

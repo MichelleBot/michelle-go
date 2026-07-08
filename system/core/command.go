@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -115,8 +116,18 @@ func (r *Registry) Register(cmd *Command) {
 }
 
 func (r *Registry) Get(name string) (*Command, bool) {
+	// Try exact match first
 	cmd, ok := r.commands[name]
-	return cmd, ok
+	if ok {
+		return cmd, true
+	}
+	// Try case-insensitive match
+	for k, c := range r.commands {
+		if strings.EqualFold(k, name) {
+			return c, true
+		}
+	}
+	return nil, false
 }
 
 func (r *Registry) All() []*Command {
@@ -217,7 +228,7 @@ func (c *Command) Execute(ptz *Ptz) error {
 		}
 	}
 
-	if c.Limit != nil && c.Limit.Enabled && ptz.Bot != nil && ptz.Bot.CommandLimiter != nil {
+	if c.Limit != nil && c.Limit.Enabled && ptz.Bot != nil && ptz.Bot.CommandLimiter != nil && !ptz.IsOwner() {
 		allowed, _ := ptz.Bot.CommandLimiter.Allow(c.Usage[0], ptz.Sender.User, c.Limit.Max, c.Limit.Window)
 		if !allowed {
 			ptz.ReplyText("⚠️ Kamu telah mencapai limit dan akan direset pada pukul 00.00.\n\nUntuk mendapatkan limit yang lebih banyak, tingkatkan ke paket premium.")

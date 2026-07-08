@@ -27,7 +27,7 @@ func runToImg(ptz *core.Ptz) error {
 
 	ptz.React("🕒")
 
-	data, err := serialize.DownloadMedia(ptz.Bot.Client, quotedMsg)
+	data, err := serialize.DownloadMedia(ptz.Client, quotedMsg)
 	if err != nil {
 		return ptz.ReplyText("❌ Gagal mendownload stiker: " + err.Error())
 	}

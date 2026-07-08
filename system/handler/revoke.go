@@ -38,7 +38,7 @@ func (h *EventHandler) handleRevokeEvent(msg *core.NormalizedMessage) {
 		name = stored.Sender
 	}
 
-	ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
+	ptz := core.NewPtzFromNormalizedMessage(h.bot, h.bot.Client, msg)
 	if ptz == nil {
 		return
 	}

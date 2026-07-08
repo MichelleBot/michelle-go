@@ -24,7 +24,7 @@ func runSticker(ptz *core.Ptz) error {
 
 	ptz.React("🕒")
 
-	data, err := serialize.DownloadMedia(ptz.Bot.Client, input.Message)
+	data, err := serialize.DownloadMedia(ptz.Client, input.Message)
 	if err != nil {
 		return ptz.ReplyText("❌ Gagal download: " + err.Error())
 	}

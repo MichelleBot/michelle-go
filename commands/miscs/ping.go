@@ -30,5 +30,5 @@ func handlePing(ptz *core.Ptz) error {
 	
 	// Edit with result
 	newText := fmt.Sprintf("✨ Kecepatan : [ %dms ]", elapsed.Milliseconds())
-	return serialize.EditMessage(ptz.Bot.Client, ptz.Chat, msgID, newText)
+	return serialize.EditMessage(ptz.Client, ptz.Chat, msgID, newText)
 }

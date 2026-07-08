@@ -39,6 +39,7 @@ func (db *DB) migrate() error {
 		`CREATE TABLE IF NOT EXISTS groups (jid TEXT PRIMARY KEY, name TEXT, activity INTEGER, adzan BOOLEAN, antibot BOOLEAN, antiporn BOOLEAN, antidelete BOOLEAN, antilink BOOLEAN, antiphishing BOOLEAN, antitagsw BOOLEAN, antivirtex BOOLEAN, antiforward BOOLEAN, antisticker BOOLEAN, adminonly BOOLEAN, captcha BOOLEAN, filter BOOLEAN, game BOOLEAN, mysterybox BOOLEAN, left BOOLEAN, localonly BOOLEAN, list_data TEXT, mute BOOLEAN, autosticker BOOLEAN, restrict BOOLEAN, member_data TEXT, text_left TEXT, text_welcome TEXT, welcome BOOLEAN, expired INTEGER, last_notified INTEGER, blocked TEXT, blacklist TEXT, stay BOOLEAN, open_at TEXT, close_at TEXT)`,
 		`CREATE TABLE IF NOT EXISTS chats (jid TEXT PRIMARY KEY, chat INTEGER, last_seen INTEGER, last_reply INTEGER)`,
 		`CREATE TABLE IF NOT EXISTS command_stats (cmd TEXT PRIMARY KEY, total_hit INTEGER, today_hit INTEGER, last_hit INTEGER)`,
+		`CREATE TABLE IF NOT EXISTS jadibot_sessions (phone TEXT PRIMARY KEY, owner_jid TEXT, created_at INTEGER)`,
 	}
 
 	for _, q := range queries {

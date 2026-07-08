@@ -25,7 +25,7 @@ func (h *EventHandler) handleEditEvent(msg *core.NormalizedMessage) {
 		return
 	}
 
-	ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
+	ptz := core.NewPtzFromNormalizedMessage(h.bot, h.bot.Client, msg)
 	if ptz == nil {
 		return
 	}

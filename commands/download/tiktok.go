@@ -31,7 +31,7 @@ func handleTikTok(ptz *core.Ptz) error {
 		return ptz.ReplyText("🚩 Link tidak valid.")
 	}
 
-	serialize.SendReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
+	serialize.SendReaction(ptz.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
 
 	data, err := utils.ScraperTikTok(url)
 	if err != nil {
@@ -72,6 +72,13 @@ func handleTikTok(ptz *core.Ptz) error {
 			if err != nil {
 				return ptz.ReplyText("🚩 Error fetching video: " + err.Error())
 			}
+
+			// Re-encode or apply faststart to video for WhatsApp compatibility
+			compatVideo, err := serialize.ReencodeMP4(videoData)
+			if err == nil {
+				videoData = compatVideo
+			}
+
 			return ptz.ReplyVideo(videoData, "video/mp4", caption)
 		} else {
 			return ptz.ReplyText("🚩 Error: No video found in API response.")

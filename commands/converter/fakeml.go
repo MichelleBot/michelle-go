@@ -31,7 +31,7 @@ func runFakeML(ptz *core.Ptz) error {
 	ptz.React("🕒")
 
 	// Get profile picture URL
-	pic, err := serialize.GetProfilePicture(ptz.Bot.Client, ptz.Sender)
+	pic, err := serialize.GetProfilePicture(ptz.Client, ptz.Sender)
 	avatarURL := ""
 	if err == nil && pic != nil {
 		avatarURL = pic.URL

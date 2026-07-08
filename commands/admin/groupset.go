@@ -45,13 +45,13 @@ func runGroupSet(ptz *core.Ptz) error {
 		if len(value) > 25 {
 			return ptz.ReplyText("🚩 Teks terlalu panjang, maksimal 25 karakter.")
 		}
-		err := serialize.SetGroupName(ptz.Bot.Client, ptz.Chat, value)
+		err := serialize.SetGroupName(ptz.Client, ptz.Chat, value)
 		if err != nil {
 			return ptz.ReplyText(fmt.Sprintf("❌ Gagal mengubah nama grup: %v", err))
 		}
 		return ptz.ReplyText("✅ Nama grup berhasil diubah.")
 	case "setdesc":
-		err := serialize.SetGroupDescription(ptz.Bot.Client, ptz.Chat, value)
+		err := serialize.SetGroupDescription(ptz.Client, ptz.Chat, value)
 		if err != nil {
 			return ptz.ReplyText(fmt.Sprintf("❌ Gagal mengubah deskripsi grup: %v", err))
 		}

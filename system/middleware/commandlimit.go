@@ -25,6 +25,13 @@ func NewCommandLimiter() *CommandLimiter {
 	return l
 }
 
+// ResetAll clears all stored command limits
+func (l *CommandLimiter) ResetAll() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.records = make(map[string]*limitRecord)
+}
+
 func (l *CommandLimiter) Allow(commandName, userID string, max int, window time.Duration) (bool, time.Duration) {
 	if max <= 0 || window <= 0 {
 		return true, 0

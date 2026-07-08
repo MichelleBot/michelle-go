@@ -18,7 +18,7 @@ const (
 	StickerQuality = "50"
 )
 
-var stickerVF = "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000"
+var stickerVF = "scale=512:512:force_original_aspect_ratio=increase,crop=512:512"
 
 func tmpFile(prefix, ext string) string {
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s%d_%d%s", prefix, os.Getpid(), rand.Int63(), ext))
@@ -69,6 +69,7 @@ func ToAnimatedWebp(input []byte, ext string, trim bool) ([]byte, error) {
 		"-i", tmpIn,
 		"-t", strconv.Itoa(maxSecs),
 		"-vf", vf,
+		"-c:v", "libwebp",
 		"-vcodec", "libwebp_anim",
 		"-loop", "0",
 		"-quality", StickerQuality,

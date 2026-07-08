@@ -27,7 +27,7 @@ func (h *EventHandler) handleReactionEvent(msg *core.NormalizedMessage) {
 	}
 
 	if msg.Reaction.Text == "❓" {
-		ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
+		ptz := core.NewPtzFromNormalizedMessage(h.bot, h.bot.Client, msg)
 		if ptz != nil {
 			_ = ptz.ReplyText(fmt.Sprintf("Reaction %s diterima pada pesan %s", msg.Reaction.Text, msg.Reaction.TargetID))
 		}

@@ -30,5 +30,5 @@ func handleOwnerContacts(ptz *core.Ptz) error {
 		},
 	}
 
-	return serialize.SendMultipleContacts(ptz.Bot.Client, ptz.Chat, contacts)
+	return serialize.SendMultipleContacts(ptz.Client, ptz.Chat, contacts)
 }

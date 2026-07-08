@@ -47,7 +47,7 @@ func init() {
 
 func resolveActionLIDToPhone(ptz *core.Ptz, jid types.JID) types.JID {
 	if jid.Server == types.HiddenUserServer {
-		pn, err := ptz.Bot.Client.Store.LIDs.GetPNForLID(context.Background(), jid)
+		pn, err := ptz.Client.Store.LIDs.GetPNForLID(context.Background(), jid)
 		if err == nil && !pn.IsEmpty() {
 			return types.NewJID(pn.User, types.DefaultUserServer)
 		}
@@ -98,7 +98,7 @@ func runAction(ptz *core.Ptz) error {
 		return ptz.ReplyText("❌ Perintah tidak dikenal.")
 	}
 
-	_, err = ptz.Bot.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{jid}, action)
+	_, err = ptz.Client.UpdateGroupParticipants(context.Background(), ptz.Chat, []types.JID{jid}, action)
 	if err != nil {
 		return ptz.ReplyText(fmt.Sprintf("❌ Gagal melakukan %s: %v", ptz.Command, err))
 	}

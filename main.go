@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	_ "michelle/commands"
@@ -15,6 +16,7 @@ import (
 	_ "michelle/commands/miscs"
 	_ "michelle/commands/owner"
 	_ "michelle/commands/utilities"
+	_ "michelle/commands/connect"
 	"michelle/system/config"
 	"michelle/system/core"
 	"michelle/system/handler"
@@ -76,6 +78,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Config error:", err)
 		os.Exit(1)
 	}
+	core.Api = core.NewMichelleApi("https://api.neoxr.my.id/api", "MichelleAI")
 	log := waLog.Stdout("michelle", cfg.LogLevel, true)
 	ctx := context.Background()
 
@@ -112,6 +115,41 @@ func main() {
 	evtHandler := handler.NewEventHandler(bot, registry)
 	client.AddEventHandler(evtHandler.Handle)
 
+	// Reconnect jadibot sessions
+	rows, err := sharedDB.Query("SELECT phone FROM jadibot_sessions")
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var phone string
+			if err := rows.Scan(&phone); err == nil {
+				go func(p string) {
+					sessionPath := filepath.Join("sessions", fmt.Sprintf("%s.db", p))
+					container, err := sqlstore.New(ctx, "sqlite3", "file:"+sessionPath+"?_foreign_keys=on", log)
+					if err != nil {
+						log.Errorf("Gagal load sesi %s: %v", p, err)
+						return
+					}
+					deviceStore, err := container.GetFirstDevice(ctx)
+					if err != nil {
+						log.Errorf("Gagal load device %s: %v", p, err)
+						return
+					}
+					client := whatsmeow.NewClient(deviceStore, log)
+					configureClient(client)
+					
+					// Register shared event handler
+					client.AddEventHandler(evtHandler.Handle)
+
+					if err := client.Connect(); err != nil {
+						log.Errorf("Gagal reconnect %s: %v", p, err)
+					} else {
+						log.Infof("Jadibot %s berhasil reconnect", p)
+					}
+				}(phone)
+			}
+		}
+	}
+
 	if deviceStore.ID != nil {
 		log.Infof("Session ditemukan. Auto connect tanpa login ulang.")
 		if err := client.Connect(); err != nil {
@@ -142,7 +180,27 @@ func main() {
 		}
 	}
 
-	log.Infof("Bot berjalan. Tekan Ctrl+C untuk stop.")
+	log.Infof("Bot berjalan. Tekan Ctrl+C untuk stop. (Version: Fix-Client-Routing)")
+
+	// Daily scheduler for limit reset at 00:00
+	go func() {
+		for {
+			now := time.Now()
+			// Calculate time until next midnight
+			nextMidnight := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+			timer := time.NewTimer(time.Until(nextMidnight))
+			<-timer.C
+
+			log.Infof("Resetting limits...")
+			bot.CommandLimiter.ResetAll()
+			// The database limits are reset lazily in GetUserProfile, 
+			// but we can clear specific entries if needed or just rely on the existing lazy logic.
+			// Given the current architecture, lazy reset seems sufficient, 
+			// but let's confirm if we need to do anything else.
+			
+			log.Infof("Limits reset successfully.")
+		}
+	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)

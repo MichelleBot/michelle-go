@@ -287,7 +287,7 @@ func (h *EventHandler) handleMessageEvent(msg *core.NormalizedMessage) {
 	h.logNormalizedMessage(msg)
 	h.trackMessage(msg)
 
-	ptz := core.NewPtzFromNormalizedMessage(h.bot, msg)
+	ptz := core.NewPtzFromNormalizedMessage(h.bot, h.bot.Client, msg)
 	
 	h.handleAntiToxic(ptz)
 	h.handleAntiBot(ptz)

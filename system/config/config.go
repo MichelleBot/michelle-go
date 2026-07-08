@@ -13,6 +13,7 @@ type Config struct {
 	Owners          []string
 	Prefixes        []string
 	SessionDB       string
+	APIKey          string
 	LoginMethod     string
 	PairingPhone    string
 	LogLevel        string
@@ -85,6 +86,8 @@ func Load() *Config {
 		stickerAuthor = "MichelleBot"
 	}
 
+	apiKey := os.Getenv("API_KEY")
+
 	pairingPhone := os.Getenv("PAIRING_PHONE")
 	logLevel := os.Getenv("LOG_LEVEL")
 	if logLevel == "" {
@@ -99,6 +102,7 @@ func Load() *Config {
 		Owners:          filtered,
 		Prefixes:        cleanPrefixes,
 		SessionDB:       sessionDB,
+		APIKey:          apiKey,
 		LoginMethod:     loginMethod,
 		PairingPhone:    pairingPhone,
 		LogLevel:        logLevel,

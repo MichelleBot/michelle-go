@@ -36,7 +36,7 @@ func handleAI(ptz *core.Ptz) error {
 		return ptz.ReplyText(fmt.Sprintf("🚩 Contoh penggunaan: %s%s apa itu nodejs", ptz.Prefix, ptz.Command))
 	}
 
-	serialize.SendReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
+	serialize.SendReaction(ptz.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, "🕒")
 	text := strings.Join(ptz.Args, " ")
 	var result string
 	var err error

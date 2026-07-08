@@ -36,7 +36,7 @@ func runGroup(ptz *core.Ptz) error {
 		return ptz.ReplyText("🚩 Argumen tidak valid. Gunakan 'open' atau 'close'.")
 	}
 
-	err := serialize.SetGroupAnnounce(ptz.Bot.Client, ptz.Chat, announce)
+	err := serialize.SetGroupAnnounce(ptz.Client, ptz.Chat, announce)
 	if err != nil {
 		return ptz.ReplyText(fmt.Sprintf("❌ Gagal mengubah pengaturan grup: %v", err))
 	}

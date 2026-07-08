@@ -25,7 +25,7 @@ func init() {
 
 func resolveLIDToPhone(ptz *core.Ptz, jid types.JID) types.JID {
 	if jid.Server == types.HiddenUserServer {
-		pn, err := ptz.Bot.Client.Store.LIDs.GetPNForLID(context.Background(), jid)
+		pn, err := ptz.Client.Store.LIDs.GetPNForLID(context.Background(), jid)
 		if err == nil && !pn.IsEmpty() {
 			return types.NewJID(pn.User, types.DefaultUserServer)
 		}
@@ -34,7 +34,7 @@ func resolveLIDToPhone(ptz *core.Ptz, jid types.JID) types.JID {
 }
 
 func runRequest(ptz *core.Ptz) error {
-	requests, err := serialize.GetGroupRequestParticipants(ptz.Bot.Client, ptz.Chat)
+	requests, err := serialize.GetGroupRequestParticipants(ptz.Client, ptz.Chat)
 	if err != nil {
 		return ptz.ReplyText(fmt.Sprintf("❌ Gagal mendapatkan daftar permintaan: %v", err))
 	}
@@ -62,7 +62,7 @@ func runRequest(ptz *core.Ptz) error {
 		for _, req := range requests {
 			jids = append(jids, req.JID)
 		}
-		_, err := serialize.ApproveJoinRequests(ptz.Bot.Client, ptz.Chat, jids)
+		_, err := serialize.ApproveJoinRequests(ptz.Client, ptz.Chat, jids)
 		if err != nil {
 			return ptz.ReplyText(fmt.Sprintf("❌ Gagal menyetujui semua: %v", err))
 		}
@@ -73,7 +73,7 @@ func runRequest(ptz *core.Ptz) error {
 		for _, req := range requests {
 			jids = append(jids, req.JID)
 		}
-		_, err := serialize.RejectJoinRequests(ptz.Bot.Client, ptz.Chat, jids)
+		_, err := serialize.RejectJoinRequests(ptz.Client, ptz.Chat, jids)
 		if err != nil {
 			return ptz.ReplyText(fmt.Sprintf("❌ Gagal menolak semua: %v", err))
 		}

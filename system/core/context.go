@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
@@ -14,6 +15,7 @@ import (
 
 type Ptz struct {
 	Bot       *Bot
+	Client    *whatsmeow.Client
 	Event     *events.Message
 	Message   *waE2E.Message
 	Info      types.MessageInfo
@@ -37,6 +39,7 @@ func NewPtz(bot *Bot, evt *events.Message) *Ptz {
 
 	return &Ptz{
 		Bot:       bot,
+		Client:    bot.Client,
 		Event:     evt,
 		Message:   evt.Message,
 		Info:      evt.Info,
@@ -52,15 +55,20 @@ func NewPtz(bot *Bot, evt *events.Message) *Ptz {
 	}
 }
 
-func NewPtzFromNormalizedMessage(bot *Bot, msg *NormalizedMessage) *Ptz {
+func NewPtzFromNormalizedMessage(bot *Bot, client *whatsmeow.Client, msg *NormalizedMessage) *Ptz {
 	if msg == nil {
 		return nil
 	}
 
 	_, cmd, rawArgs, args, prefix := parseCommandParts(bot, msg.Body)
 
+	if client == nil {
+		client = bot.Client
+	}
+
 	return &Ptz{
 		Bot:       bot,
+		Client:    client,
 		Event:     msg.Event,
 		Message:   msg.Message,
 		Info:      msg.Info,
@@ -88,7 +96,7 @@ func parseCommandParts(bot *Bot, body string) ([]string, string, string, []strin
 			trimmedBody := strings.TrimSpace(strings.TrimPrefix(body, prefix))
 			parts = strings.Fields(trimmedBody)
 			if len(parts) > 0 {
-				cmd = strings.ToLower(parts[0])
+				cmd = parts[0] // Removed strings.ToLower() to preserve case for comparison if needed, or handle lowercase here for consistency.
 				if len(parts) > 1 {
 					args = parts[1:]
 					// Re-extract rawArgs based on original split structure
@@ -186,12 +194,12 @@ func (ptz *Ptz) IsBotAdmin() bool {
 	if ptz.GroupInfo == nil {
 		return false
 	}
-	botID := ptz.Bot.Client.Store.ID
+	botID := ptz.Client.Store.ID
 	if botID == nil {
 		return false
 	}
 	botSender := *botID
-	botLID := ptz.Bot.Client.Store.LID
+	botLID := ptz.Client.Store.LID
 	for _, p := range ptz.GroupInfo.Participants {
 		if matchParticipant(p, botSender, botLID) {
 			return p.IsAdmin || p.IsSuperAdmin
@@ -204,7 +212,7 @@ func (ptz *Ptz) LoadGroupInfo() error {
 	if !ptz.IsGroup {
 		return nil
 	}
-	info, err := ptz.Bot.Client.GetGroupInfo(context.Background(), ptz.Chat)
+	info, err := ptz.Client.GetGroupInfo(context.Background(), ptz.Chat)
 	if err != nil {
 		return err
 	}
@@ -234,43 +242,51 @@ func (ptz *Ptz) GetSenderName() string {
 }
 
 func (ptz *Ptz) React(emoji string) error {
-	return serialize.SendReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, emoji)
+	ptz.Bot.Log.Infof("Ptz React - Client Pointer: %p", ptz.Client)
+	return serialize.SendReaction(ptz.Client, ptz.Chat, ptz.Info.ID, ptz.Sender, emoji)
 }
 
 func (ptz *Ptz) Unreact() error {
-	return serialize.RemoveReaction(ptz.Bot.Client, ptz.Chat, ptz.Info.ID, ptz.Sender)
+	ptz.Bot.Log.Infof("Ptz Unreact - Client Pointer: %p", ptz.Client)
+	return serialize.RemoveReaction(ptz.Client, ptz.Chat, ptz.Info.ID, ptz.Sender)
 }
 
 func (ptz *Ptz) ReplyText(text string) error {
-	return serialize.SendTextReply(ptz.Bot.Client, ptz.Chat, text, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("ReplyText - Ptz Bot Pointer: %p, Client Pointer: %p", ptz.Bot, ptz.Client)
+	return serialize.SendTextReply(ptz.Client, ptz.Chat, text, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyTextID(text string) (types.MessageID, error) {
-	return serialize.SendTextReplyID(ptz.Bot.Client, ptz.Chat, text, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("Ptz ReplyTextID - Client Pointer: %p", ptz.Client)
+	return serialize.SendTextReplyID(ptz.Client, ptz.Chat, text, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyImage(data []byte, mime, caption string) error {
-	return serialize.SendImageReply(ptz.Bot.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("Ptz ReplyImage - Client Pointer: %p", ptz.Client)
+	return serialize.SendImageReply(ptz.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyImageID(data []byte, mime, caption string) (types.MessageID, error) {
-	return serialize.SendImageReplyID(ptz.Bot.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("Ptz ReplyImageID - Client Pointer: %p", ptz.Client)
+	return serialize.SendImageReplyID(ptz.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyVideo(data []byte, mime, caption string) error {
-	return serialize.SendVideoReply(ptz.Bot.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("Ptz ReplyVideo - Client Pointer: %p", ptz.Client)
+	return serialize.SendVideoReply(ptz.Client, ptz.Chat, data, mime, caption, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyAudio(data []byte, mime string) error {
-	return serialize.SendAudioReply(ptz.Bot.Client, ptz.Chat, data, mime, false, ptz.Message, ptz.Info)
+	ptz.Bot.Log.Infof("Ptz ReplyAudio - Client Pointer: %p", ptz.Client)
+	return serialize.SendAudioReply(ptz.Client, ptz.Chat, data, mime, false, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplySticker(data []byte, mime string, animated bool) error {
-	return serialize.SendStickerReply(ptz.Bot.Client, ptz.Chat, data, mime, animated, ptz.Message, ptz.Info)
+	return serialize.SendStickerReply(ptz.Client, ptz.Chat, data, mime, animated, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) ReplyDocument(data []byte, mime, filename, caption string) error {
-	return serialize.SendDocumentReply(ptz.Bot.Client, ptz.Chat, data, mime, filename, caption, ptz.Message, ptz.Info)
+	return serialize.SendDocumentReply(ptz.Client, ptz.Chat, data, mime, filename, caption, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) GetReplyText() string {
@@ -296,11 +312,11 @@ func (ptz *Ptz) GetPhoneJID() types.JID {
 }
 
 func (ptz *Ptz) ReplyTextMention(text string, mentionedJIDs []types.JID) error {
-	return serialize.SendTextReplyMention(ptz.Bot.Client, ptz.Chat, text, mentionedJIDs, ptz.Message, ptz.Info)
+	return serialize.SendTextReplyMention(ptz.Client, ptz.Chat, text, mentionedJIDs, ptz.Message, ptz.Info)
 }
 
 func (ptz *Ptz) SendTextMention(text string, mentionedJIDs []types.JID) error {
-	return serialize.SendTextMention(ptz.Bot.Client, ptz.Chat, text, mentionedJIDs)
+	return serialize.SendTextMention(ptz.Client, ptz.Chat, text, mentionedJIDs)
 }
 
 func (ptz *Ptz) ContextWithTimeout(timeout time.Duration) (context.Context, context.CancelFunc) {

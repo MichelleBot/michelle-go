@@ -64,20 +64,20 @@ func FetchAsBuffer(url string) ([]byte, error) {
 }
 
 func SendAsImage(ptz *core.Ptz, data []byte, mimeType string) error {
-	return serialize.SendImageReply(ptz.Bot.Client, ptz.Chat, data, mimeType, "", ptz.Message, ptz.Info)
+	return serialize.SendImageReply(ptz.Client, ptz.Chat, data, mimeType, "", ptz.Message, ptz.Info)
 }
 
 func SendAsVideo(ptz *core.Ptz, data []byte, mimeType string) error {
-	return serialize.SendVideoReply(ptz.Bot.Client, ptz.Chat, data, mimeType, "", ptz.Message, ptz.Info)
+	return serialize.SendVideoReply(ptz.Client, ptz.Chat, data, mimeType, "", ptz.Message, ptz.Info)
 }
 
 func SendAsAudio(ptz *core.Ptz, data []byte, mimeType string) error {
-	return serialize.SendAudioReply(ptz.Bot.Client, ptz.Chat, data, mimeType, false, ptz.Message, ptz.Info)
+	return serialize.SendAudioReply(ptz.Client, ptz.Chat, data, mimeType, false, ptz.Message, ptz.Info)
 }
 
 func SendAsDocument(ptz *core.Ptz, data []byte, mimeType, urlPath string) error {
 	filename := DetectFilename(mimeType, urlPath)
-	return serialize.SendDocumentReply(ptz.Bot.Client, ptz.Chat, data, mimeType, filename, "", ptz.Message, ptz.Info)
+	return serialize.SendDocumentReply(ptz.Client, ptz.Chat, data, mimeType, filename, "", ptz.Message, ptz.Info)
 }
 
 func SendAsFormattedJSON(ptz *core.Ptz, data []byte) error {

@@ -31,7 +31,7 @@ func handleJoin(ptz *core.Ptz) error {
 	
 	code := match[1]
 	
-	jid, err := ptz.Bot.Client.JoinGroupWithLink(context.Background(), code)
+	jid, err := ptz.Client.JoinGroupWithLink(context.Background(), code)
 	if err != nil {
 		return ptz.ReplyText("🚩 Maaf saya tidak bisa bergabung ke grup ini :(")
 	}
